@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { WeeklyOutputChart } from '@/components/home/weekly-output-chart'
+import { ComponentShowcase } from '@/components/home/component-showcase'
 import { navGroups } from '@/lib/nav'
 import {
   Sparkles,
@@ -180,6 +181,9 @@ export default function WorkbenchPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Component showcase */}
+      <ComponentShowcase />
 
       {/* Popular templates */}
       <section>
