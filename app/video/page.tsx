@@ -14,13 +14,11 @@ import {
   UserSquare2,
   AudioLines,
   Scissors,
-  Copy,
   Radio,
   Wand2,
   Captions,
   Loader2,
   CheckCircle2,
-  Download,
   FileVideo,
   Mic2,
   Music4,
@@ -43,12 +41,6 @@ const storyboard = [
   { t: '00:18', desc: '结尾 CTA：0 首付 3 年免息，立即预约', dur: '2s', img: '/cars/blue-suv-poster.png' },
 ]
 
-const variants = [
-  { label: '15s 竖版', ratio: '9:16', tag: '抖音' },
-  { label: '30s 横版', ratio: '16:9', tag: '视频号' },
-  { label: '60s 方形', ratio: '1:1', tag: '朋友圈' },
-]
-
 const genSteps = [
   { icon: Sparkles, label: '解析脚本与卖点', desc: '拆解主题、卖点与目标平台' },
   { icon: Film, label: '生成智能分镜', desc: '编排 5 个镜头与运镜节奏' },
@@ -66,7 +58,6 @@ export default function VideoPage() {
   const [playing, setPlaying] = useState(false)
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
   const [step, setStep] = useState(0)
-  const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
 
@@ -309,64 +300,6 @@ export default function VideoPage() {
               ))}
             </div>
           </div>
-        </Card>
-
-        {/* Variants */}
-        <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Copy className="size-4 text-primary" />
-            视频变体生成（FR-VID-006）· 一条母视频多版本 A/B 测试
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {variants.map((v) => {
-              const on = selectedVariant === v.label
-              return (
-                <button
-                  key={v.label}
-                  type="button"
-                  onClick={() => setSelectedVariant(on ? null : v.label)}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg border bg-background p-3 text-left transition-all active:scale-[0.98]',
-                    on
-                      ? 'border-primary bg-primary/8 ring-1 ring-primary/30'
-                      : 'border-border hover:border-primary/40 hover:bg-secondary/40',
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'flex shrink-0 items-center justify-center rounded bg-primary/15 text-primary',
-                      v.ratio === '9:16' ? 'h-12 w-7' : v.ratio === '1:1' ? 'size-10' : 'h-7 w-12',
-                    )}
-                  >
-                    <Play className="size-3.5 fill-current" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{v.label}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {v.ratio} · {v.tag}
-                    </p>
-                  </div>
-                  {on ? (
-                    <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                  ) : (
-                    <Download className="size-4 shrink-0 text-muted-foreground/60" />
-                  )}
-                </button>
-              )
-            })}
-          </div>
-          {selectedVariant && (
-            <div className="mt-3 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/8 px-3 py-2 text-xs">
-              <span className="flex items-center gap-1.5 font-medium text-primary">
-                <FileVideo className="size-3.5" />
-                已选择「{selectedVariant}」用于导出
-              </span>
-              <Button size="sm" className="h-7 gap-1.5 px-2.5">
-                <Download className="size-3.5" />
-                导出
-              </Button>
-            </div>
-          )}
         </Card>
         </>
         )}
