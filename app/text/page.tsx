@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   PenLine,
   ImageIcon,
+  GripVertical,
 } from 'lucide-react'
 
 const contentTypes = ['公众号推文', '小红书种草', '知乎回答', '商品详情页', '微博文案']
@@ -59,6 +60,9 @@ export default function TextPage() {
   const [platform, setPlatform] = useState(platforms[0])
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
   const [step, setStep] = useState(0)
+  const [items, setItems] = useState(outline)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [overIndex, setOverIndex] = useState<number | null>(null)
 
   function generate() {
     setStatus('generating')
@@ -72,6 +76,22 @@ export default function TextPage() {
         setTimeout(() => setStatus('done'), 600)
       }
     }, 760)
+  }
+
+  function handleDrop(target: number) {
+    if (dragIndex === null || dragIndex === target) {
+      setDragIndex(null)
+      setOverIndex(null)
+      return
+    }
+    setItems((prev) => {
+      const next = [...prev]
+      const [moved] = next.splice(dragIndex, 1)
+      next.splice(target, 0, moved)
+      return next
+    })
+    setDragIndex(null)
+    setOverIndex(null)
   }
 
   return (
@@ -157,23 +177,49 @@ export default function TextPage() {
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <ListTree className="size-4 text-primary" />
             AI 生成大纲
-            <Badge variant="muted" className="ml-auto">可拖拽调整</Badge>
+            <Badge variant="muted" className="ml-auto gap-1">
+              <GripVertical className="size-3" />
+              拖拽调整顺序
+            </Badge>
           </div>
           <div className="space-y-2">
-            {outline.map((o, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              >
-                <span className="text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>
-                <span className="flex-1">{o.h}</span>
-                {o.img && (
-                  <Badge variant="accent" className="text-[10px]">
-                    建议配图
-                  </Badge>
-                )}
-              </div>
-            ))}
+            {items.map((o, i) => {
+              const isDragging = dragIndex === i
+              const isOver = overIndex === i && dragIndex !== null && dragIndex !== i
+              return (
+                <div
+                  key={o.h}
+                  draggable
+                  onDragStart={(e) => {
+                    setDragIndex(i)
+                    e.dataTransfer.effectAllowed = 'move'
+                  }}
+                  onDragEnter={() => setOverIndex(i)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(i)}
+                  onDragEnd={() => {
+                    setDragIndex(null)
+                    setOverIndex(null)
+                  }}
+                  className={cn(
+                    'flex cursor-grab items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm transition-all duration-200 active:cursor-grabbing',
+                    isDragging
+                      ? 'scale-[0.98] border-primary/60 opacity-50 shadow-lg ring-1 ring-primary/40'
+                      : 'border-border hover:border-primary/40 hover:bg-secondary/40',
+                    isOver && 'border-primary border-dashed bg-primary/8 ring-1 ring-primary/30',
+                  )}
+                >
+                  <GripVertical className="size-4 shrink-0 text-muted-foreground/60" />
+                  <span className="w-6 text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="flex-1">{o.h}</span>
+                  {o.img && (
+                    <Badge variant="accent" className="text-[10px]">
+                      建议配图
+                    </Badge>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </Card>
 
