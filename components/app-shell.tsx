@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { navGroups, flatNav } from '@/lib/nav'
 import { cn } from '@/lib/utils'
@@ -33,6 +33,7 @@ function Logo() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const current = flatNav.find((n) =>
     n.href === '/' ? pathname === '/' : pathname.startsWith(n.href),
@@ -148,11 +149,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="pr-8">搜索素材、模板、车型…</span>
               <kbd className="rounded border border-border bg-muted px-1.5 text-[10px]">⌘K</kbd>
             </div>
-            <Button variant="ghost" size="icon" aria-label="通知" className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="通知"
+              className="relative transition-transform active:scale-90"
+            >
               <Bell className="size-5" />
               <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-accent" />
             </Button>
-            <Button className="gap-1.5 h-9 px-3">
+            <Button
+              className="gap-1.5 h-9 px-3 transition-transform active:scale-95"
+              onClick={() => router.push('/image')}
+            >
               <Plus className="size-4" />
               新建创作
             </Button>
