@@ -16,6 +16,12 @@ import {
   Smile,
   ImagePlus,
   Check,
+  Loader2,
+  CheckCircle2,
+  Heart,
+  ScanText,
+  PenLine,
+  ShieldCheck,
 } from 'lucide-react'
 
 const sceneList = ['每日早安', '车型推荐', '促销活动', '交车仪式', '用车知识', '节日祝福']
@@ -40,10 +46,68 @@ const copywriting = `【提前锁定爱车 · 抢占0首付名额】🚗
 
 #星海SUV #新能源 #0首付购车`
 
+const watermarkOptions = ['个人二维码 / 联系方式', '品牌 Logo + 门店信息', '水印位置 · 右下角']
+
+const genSteps = [
+  { icon: ScanText, label: '解析场景与人设', desc: '结合内容日历与人设风格' },
+  { icon: PenLine, label: 'AI 文案撰写', desc: '生成高转化朋友圈文案' },
+  { icon: ImagePlus, label: '智能配图匹配', desc: '从素材库挑选场景图' },
+  { icon: QrCode, label: '添加水印二维码', desc: '嵌入专属二维码与门店信息' },
+  { icon: ShieldCheck, label: '合规润色校验', desc: '规避违禁词并优化表达' },
+]
+
 export default function MomentsPage() {
   const [scene, setScene] = useState(sceneList[1])
   const [persona, setPersona] = useState(personas[0])
   const [step, setStep] = useState(3)
+  const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
+  const [genStep, setGenStep] = useState(0)
+  const [copied, setCopied] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [liked, setLiked] = useState(false)
+  const [watermarks, setWatermarks] = useState<string[]>(watermarkOptions)
+
+  function generate() {
+    setStatus('generating')
+    setGenStep(0)
+    let i = 0
+    const timer = setInterval(() => {
+      i += 1
+      setGenStep(i)
+      if (i >= genSteps.length) {
+        clearInterval(timer)
+        setTimeout(() => setStatus('done'), 600)
+      }
+    }, 720)
+  }
+
+  function handleCopy() {
+    const done = () => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    }
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(copywriting).then(done).catch(done)
+    } else {
+      done()
+    }
+  }
+
+  function handleSend() {
+    if (sending) return
+    setSending(true)
+    setSent(false)
+    setTimeout(() => {
+      setSending(false)
+      setSent(true)
+      setTimeout(() => setSent(false), 2200)
+    }, 1200)
+  }
+
+  function toggleWatermark(w: string) {
+    setWatermarks((prev) => (prev.includes(w) ? prev.filter((x) => x !== w) : [...prev, w]))
+  }
 
   return (
     <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[1fr_400px]">
@@ -119,11 +183,24 @@ export default function MomentsPage() {
           </div>
 
           <div className="mt-4 flex gap-2">
-            <Button className="h-10 flex-1 gap-2">
-              <Sparkles className="size-4" />
-              一键生成文案
+            <Button
+              className="h-10 flex-1 gap-2"
+              onClick={generate}
+              disabled={status === 'generating'}
+            >
+              {status === 'generating' ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  AI 正在生成文案…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  {status === 'done' ? '重新生成文案' : '一键生成文案'}
+                </>
+              )}
             </Button>
-            <Button variant="outline" size="icon" className="h-10 w-10" aria-label="语音输入">
+            <Button variant="outline" size="icon" className="h-10 w-10 active:scale-95" aria-label="语音输入">
               <Mic className="size-4" />
             </Button>
           </div>
@@ -155,6 +232,10 @@ export default function MomentsPage() {
 
       {/* Right: phone preview */}
       <div className="flex flex-col gap-4">
+        {status === 'generating' ? (
+          <GenerationProcess step={genStep} scene={scene} persona={persona} />
+        ) : (
+        <>
         <div className="mx-auto w-full max-w-[340px] rounded-[2.5rem] border-4 border-border bg-card p-3 shadow-2xl">
           <div className="mb-2 flex items-center justify-between px-2 text-[11px] text-muted-foreground">
             <span>9:41</span>
@@ -174,18 +255,33 @@ export default function MomentsPage() {
                   {['/cars/blue-suv-poster.png', '/cars/showroom.png'].map((src) => (
                     <div key={src} className="relative aspect-square overflow-hidden rounded-md">
                       <Image src={src || '/placeholder.svg'} alt="朋友圈配图" fill className="object-cover" />
-                      <span className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded bg-black/50 px-1 py-0.5 text-[8px] text-white">
-                        <QrCode className="size-2.5" />
-                        专属二维码
-                      </span>
+                      {watermarks.includes('个人二维码 / 联系方式') && (
+                        <span className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded bg-black/50 px-1 py-0.5 text-[8px] text-white">
+                          <QrCode className="size-2.5" />
+                          专属二维码
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
                 <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground">
                   <span>刚刚</span>
+                  <button
+                    type="button"
+                    onClick={() => setLiked((v) => !v)}
+                    aria-pressed={liked}
+                    aria-label="点赞"
+                    className={cn(
+                      'flex items-center gap-1 transition-colors active:scale-90',
+                      liked ? 'text-primary' : 'hover:text-foreground',
+                    )}
+                  >
+                    <Heart className={cn('size-3', liked && 'fill-current')} />
+                    {liked ? 33 : 32}
+                  </button>
                   <span className="flex items-center gap-1">
                     <Smile className="size-3" />
-                    32
+                    评论
                   </span>
                 </div>
               </div>
@@ -199,29 +295,197 @@ export default function MomentsPage() {
             素材水印（FR-MOM-006）
           </div>
           <div className="space-y-2 text-xs">
-            {['个人二维码 / 联系方式', '品牌 Logo + 门店信息', '水印位置 · 右下角'].map((w) => (
-              <label key={w} className="flex items-center gap-2 text-muted-foreground">
-                <span className="flex size-4 items-center justify-center rounded bg-primary text-primary-foreground">
-                  <Check className="size-3" />
-                </span>
-                {w}
-              </label>
-            ))}
+            {watermarkOptions.map((w) => {
+              const on = watermarks.includes(w)
+              return (
+                <button
+                  key={w}
+                  type="button"
+                  onClick={() => toggleWatermark(w)}
+                  aria-pressed={on}
+                  className={cn(
+                    'flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors active:scale-[0.99]',
+                    on ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'flex size-4 items-center justify-center rounded border transition-colors',
+                      on
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-transparent',
+                    )}
+                  >
+                    {on && <Check className="size-3" />}
+                  </span>
+                  {w}
+                </button>
+              )
+            })}
           </div>
         </Card>
 
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" className="h-10 gap-1.5">
-            <Copy className="size-4" />
-            复制文案
+          <Button
+            variant="outline"
+            className={cn('h-10 gap-1.5 transition-colors active:scale-95', copied && 'border-primary/50 text-primary')}
+            onClick={handleCopy}
+          >
+            {copied ? (
+              <>
+                <CheckCircle2 className="size-4" />
+                已复制
+              </>
+            ) : (
+              <>
+                <Copy className="size-4" />
+                复制文案
+              </>
+            )}
           </Button>
-          <Button className="h-10 gap-1.5">
-            <Send className="size-4" />
-            发送到微信
+          <Button className="h-10 gap-1.5 active:scale-95" onClick={handleSend} disabled={sending}>
+            {sending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                发送中…
+              </>
+            ) : sent ? (
+              <>
+                <CheckCircle2 className="size-4" />
+                已发送
+              </>
+            ) : (
+              <>
+                <Send className="size-4" />
+                发送到微信
+              </>
+            )}
           </Button>
         </div>
+        </>
+        )}
       </div>
     </div>
+  )
+}
+
+function GenerationProcess({
+  step,
+  scene,
+  persona,
+}: {
+  step: number
+  scene: string
+  persona: string
+}) {
+  const progress = Math.round((Math.min(step, genSteps.length) / genSteps.length) * 100)
+  return (
+    <Card className="glow-primary overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+        <span className="grid size-8 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Sparkles className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">AI 正在生成朋友圈文案</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {scene} · {persona}
+          </p>
+        </div>
+        <Badge variant="accent" className="ml-auto shrink-0 gap-1">
+          <Loader2 className="size-3 animate-spin" />
+          {progress}%
+        </Badge>
+      </div>
+
+      {/* Phone skeleton */}
+      <div className="p-5">
+        <div className="mx-auto w-full max-w-[300px] rounded-[2rem] border-4 border-border bg-card p-3">
+          <div className="rounded-2xl bg-background p-4">
+            <div className="flex items-start gap-3">
+              <span className="size-9 shrink-0 animate-pulse rounded-lg bg-primary/20" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <div className="h-3 w-24 animate-pulse rounded bg-primary/20" />
+                <div className="h-2.5 w-full animate-pulse rounded bg-muted" />
+                <div className="h-2.5 w-11/12 animate-pulse rounded bg-muted" />
+                <div className="h-2.5 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
+                  <div className="aspect-square animate-pulse rounded-md bg-muted" />
+                  <div className="aspect-square animate-pulse rounded-md bg-muted" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-full bg-primary/10 py-1 text-[11px] text-primary">
+            <Loader2 className="size-3 animate-spin" />
+            正在生成第 {Math.min(step + 1, genSteps.length)} / {genSteps.length} 步
+          </div>
+        </div>
+      </div>
+
+      <div className="px-5">
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step timeline */}
+      <div className="space-y-1 p-5">
+        {genSteps.map((s, i) => {
+          const done = i < step
+          const activeStep = i === step
+          const Icon = s.icon
+          return (
+            <div
+              key={s.label}
+              className={cn(
+                'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors',
+                activeStep
+                  ? 'border-primary/40 bg-primary/8'
+                  : done
+                    ? 'border-transparent'
+                    : 'border-transparent opacity-50',
+              )}
+            >
+              <span
+                className={cn(
+                  'grid size-8 shrink-0 place-items-center rounded-lg',
+                  done
+                    ? 'bg-primary/15 text-primary'
+                    : activeStep
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {done ? (
+                  <CheckCircle2 className="size-4" />
+                ) : activeStep ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Icon className="size-4" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{s.label}</p>
+                <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
+              </div>
+              {done && (
+                <Badge variant="success" className="shrink-0 text-[10px]">
+                  完成
+                </Badge>
+              )}
+              {activeStep && (
+                <Badge variant="muted" className="shrink-0 text-[10px]">
+                  进行中
+                </Badge>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </Card>
   )
 }
 
