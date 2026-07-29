@@ -16,6 +16,10 @@ import {
   Copy,
   ListTree,
   Gauge,
+  Loader2,
+  CheckCircle2,
+  PenLine,
+  ImageIcon,
 } from 'lucide-react'
 
 const contentTypes = ['公众号推文', '小红书种草', '知乎回答', '商品详情页', '微博文案']
@@ -39,12 +43,36 @@ const topics = [
   { t: '年轻家庭的第一台电车怎么选', hot: '热度 87' },
 ]
 
+const genSteps = [
+  { icon: Search, label: '智能选题分析', desc: '解析行业热点与目标人群' },
+  { icon: ListTree, label: '生成内容大纲', desc: '构建六段式文章结构' },
+  { icon: PenLine, label: 'AI 正文撰写', desc: '逐段生成专业图文内容' },
+  { icon: ImageIcon, label: '智能配图匹配', desc: '从素材库匹配场景图' },
+  { icon: Gauge, label: 'SEO 优化排版', desc: '关键词密度与可读性调优' },
+]
+
 export default function TextPage() {
   const [type, setType] = useState(contentTypes[0])
   const [style, setStyle] = useState(writeStyles[0])
   const [tone, setTone] = useState(tones[1])
   const [length, setLength] = useState(lengths[2])
   const [platform, setPlatform] = useState(platforms[0])
+  const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
+  const [step, setStep] = useState(0)
+
+  function generate() {
+    setStatus('generating')
+    setStep(0)
+    let i = 0
+    const timer = setInterval(() => {
+      i += 1
+      setStep(i)
+      if (i >= genSteps.length) {
+        clearInterval(timer)
+        setTimeout(() => setStatus('done'), 600)
+      }
+    }, 760)
+  }
 
   return (
     <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[360px_1fr]">
@@ -103,14 +131,27 @@ export default function TextPage() {
           </div>
         </Card>
 
-        <Button className="h-11 gap-2">
-          <Sparkles className="size-4" />
-          生成图文内容
+        <Button className="h-11 gap-2" onClick={generate} disabled={status === 'generating'}>
+          {status === 'generating' ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              AI 正在生成内容…
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-4" />
+              {status === 'done' ? '重新生成图文内容' : '生成图文内容'}
+            </>
+          )}
         </Button>
       </div>
 
       {/* Main editor */}
       <div className="flex flex-col gap-4">
+        {status === 'generating' ? (
+          <GenerationProcess step={step} />
+        ) : (
+        <>
         {/* Outline */}
         <Card className="p-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
@@ -218,6 +259,8 @@ export default function TextPage() {
             </Card>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   )
@@ -245,6 +288,110 @@ function Chip({
     >
       {children}
     </button>
+  )
+}
+
+function GenerationProcess({ step }: { step: number }) {
+  const progress = Math.round((Math.min(step, genSteps.length) / genSteps.length) * 100)
+  return (
+    <Card className="glow-primary overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+        <span className="grid size-8 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Sparkles className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">AI 正在生成图文内容</p>
+          <p className="text-xs text-muted-foreground">智能体正在调用知识库与素材库协同创作</p>
+        </div>
+        <Badge variant="accent" className="ml-auto shrink-0 gap-1">
+          <Loader2 className="size-3 animate-spin" />
+          {progress}%
+        </Badge>
+      </div>
+
+      <div className="px-5 pt-4">
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step timeline */}
+      <div className="space-y-1 p-5">
+        {genSteps.map((s, i) => {
+          const done = i < step
+          const active = i === step
+          const Icon = s.icon
+          return (
+            <div
+              key={s.label}
+              className={cn(
+                'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors',
+                active
+                  ? 'border-primary/40 bg-primary/8'
+                  : done
+                    ? 'border-transparent'
+                    : 'border-transparent opacity-50',
+              )}
+            >
+              <span
+                className={cn(
+                  'grid size-8 shrink-0 place-items-center rounded-lg',
+                  done
+                    ? 'bg-primary/15 text-primary'
+                    : active
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {done ? (
+                  <CheckCircle2 className="size-4" />
+                ) : active ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Icon className="size-4" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{s.label}</p>
+                <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
+              </div>
+              {done && (
+                <Badge variant="success" className="shrink-0 text-[10px]">
+                  完成
+                </Badge>
+              )}
+              {active && (
+                <Badge variant="muted" className="shrink-0 text-[10px]">
+                  进行中
+                </Badge>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Streaming skeleton preview */}
+      <div className="space-y-3 border-t border-border p-5">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <PenLine className="size-3.5 text-primary" />
+          实时渲染预览
+        </div>
+        <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="space-y-2">
+          <div className="h-3 w-full animate-pulse rounded bg-muted" />
+          <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="aspect-[16/9] w-full animate-pulse rounded-lg bg-muted" />
+        <div className="space-y-2">
+          <div className="h-3 w-full animate-pulse rounded bg-muted" />
+          <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+        </div>
+      </div>
+    </Card>
   )
 }
 
