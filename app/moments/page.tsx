@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { GenerateGuardButton } from '@/components/generate-guard-button'
 import { cn } from '@/lib/utils'
 import {
   Sparkles,
@@ -119,10 +120,12 @@ export default function MomentsPage() {
           </div>
 
           <div className="mt-4 flex gap-2">
-            <Button className="h-10 flex-1 gap-2">
-              <Sparkles className="size-4" />
-              一键生成文案
-            </Button>
+            <GenerateGuardButton
+              content={copywriting}
+              label="一键生成文案"
+              generatingLabel="AI 正在生成朋友圈文案…"
+              className="h-10 flex-1"
+            />
             <Button variant="outline" size="icon" className="h-10 w-10" aria-label="语音输入">
               <Mic className="size-4" />
             </Button>

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { GenerateGuardButton } from '@/components/generate-guard-button'
 import { cn } from '@/lib/utils'
 import {
   Sparkles,
@@ -106,10 +107,11 @@ export default function VideoPage() {
           </Button>
         </Card>
 
-        <Button className="h-11 gap-2">
-          <Sparkles className="size-4" />
-          一键成片（≤ 3 分钟）
-        </Button>
+        <GenerateGuardButton
+          content={`${type} · 2026 星海 SUV 上市。数字人：${human}，配音：${voice}。卖点：智能座舱、城市 NOA、综合续航 700km（CLTC 工况）。`}
+          label="一键成片（≤ 3 分钟）"
+          generatingLabel="AI 正在合成视频…"
+        />
       </div>
 
       {/* Main preview + timeline */}

@@ -5,9 +5,9 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { GenerateGuardButton } from '@/components/generate-guard-button'
 import { cn } from '@/lib/utils'
 import {
-  Sparkles,
   FileText,
   Lightbulb,
   Layers,
@@ -103,10 +103,11 @@ export default function TextPage() {
           </div>
         </Card>
 
-        <Button className="h-11 gap-2">
-          <Sparkles className="size-4" />
-          生成图文内容
-        </Button>
+        <GenerateGuardButton
+          content={`实测 2026 款星海 SUV：这台旗舰把智能座舱卷到了新高度。${type} · ${style} · ${platform}。综合续航 700km，城市 NOA 智驾，0 首付 3 年免息购车方案。`}
+          label="生成图文内容"
+          generatingLabel="AI 正在生成图文内容…"
+        />
       </div>
 
       {/* Main editor */}

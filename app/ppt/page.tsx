@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { GenerateGuardButton } from '@/components/generate-guard-button'
 import { cn } from '@/lib/utils'
 import {
   Sparkles,
@@ -108,10 +109,11 @@ export default function PptPage() {
           </div>
         </Card>
 
-        <Button className="h-11 gap-2">
-          <Sparkles className="size-4" />
-          AI 一键生成 PPT（≤ 2 分钟）
-        </Button>
+        <GenerateGuardButton
+          content={`${scene} · ${slides[current].title}。${slides[current].sub}。星海 SUV 综合续航 700km，城市 NOA 组合辅助驾驶，0 首付 3 年免息政策。`}
+          label="AI 一键生成 PPT（≤ 2 分钟）"
+          generatingLabel="AI 正在生成 PPT…"
+        />
       </div>
 
       {/* Main slide preview */}
@@ -225,7 +227,7 @@ export default function PptPage() {
               粘贴 Excel 数据，AI 自动推荐最佳图表类型并生成。图表与数据联动，数据更新后自动刷新。
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {['销量趋势', '市场份额', '客户画像', '漏斗转化'].map((c) => (
+              {['销量趋势', '市场份额', '客户画像', '漏���转化'].map((c) => (
                 <Badge key={c} variant="outline" className="text-[10px]">
                   {c}
                 </Badge>
