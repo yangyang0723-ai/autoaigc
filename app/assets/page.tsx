@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import {
   Search,
@@ -16,6 +16,15 @@ import {
   MoreVertical,
   Download,
   Clock,
+  X,
+  Loader2,
+  CheckCircle2,
+  Share2,
+  Pencil,
+  Trash2,
+  Sparkles,
+  HardDrive,
+  Tag,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -88,6 +97,12 @@ export default function AssetsPage() {
   const [activeFolder, setActiveFolder] = useState('全部素材')
   const [typeFilter, setTypeFilter] = useState<AssetType | '全部'>('全部')
   const [query, setQuery] = useState('')
+  const [starredIds, setStarredIds] = useState<Set<string>>(
+    () => new Set(assets.filter((a) => a.starred).map((a) => a.id)),
+  )
+  const [selected, setSelected] = useState<Asset | null>(null)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [downloadedId, setDownloadedId] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     return assets.filter((a) => {
@@ -97,6 +112,41 @@ export default function AssetsPage() {
     })
   }, [typeFilter, query])
 
+  const isStarred = (id: string) => starredIds.has(id)
+
+  function toggleStar(id: string) {
+    setStarredIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function handleDownload(id: string) {
+    if (downloadingId) return
+    setDownloadingId(id)
+    setDownloadedId(null)
+    setTimeout(() => {
+      setDownloadingId(null)
+      setDownloadedId(id)
+      setTimeout(() => setDownloadedId((cur) => (cur === id ? null : cur)), 2000)
+    }, 1100)
+  }
+
+  useEffect(() => {
+    if (!selected) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelected(null)
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [selected])
+
   return (
     <div className="flex gap-6">
       {/* Folder rail */}
@@ -104,7 +154,7 @@ export default function AssetsPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold">素材库</h2>
           <button
-            className="grid size-7 place-items-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary"
+            className="grid size-7 place-items-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary active:scale-90"
             aria-label="新建文件夹"
           >
             <FolderPlus className="size-4" />
@@ -148,11 +198,11 @@ export default function AssetsPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" className="h-9 gap-1.5 px-3">
+              <Button variant="outline" className="h-9 gap-1.5 px-3 active:scale-95">
                 <FolderPlus className="size-4" />
                 新建文件夹
               </Button>
-              <Button className="h-9 gap-1.5 px-3">
+              <Button className="h-9 gap-1.5 px-3 active:scale-95">
                 <Upload className="size-4" />
                 上传素材
               </Button>
@@ -217,7 +267,16 @@ export default function AssetsPage() {
               return (
                 <Card
                   key={a.id}
-                  className="group overflow-hidden p-0 transition-colors hover:border-primary/40"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelected(a)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelected(a)
+                    }
+                  }}
+                  className="group cursor-pointer overflow-hidden p-0 transition-all hover:border-primary/40 hover:shadow-lg active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-secondary">
                     <Image
@@ -231,11 +290,25 @@ export default function AssetsPage() {
                       <Icon className={cn('size-3.5', typeMeta[a.type].color)} />
                       {a.type}
                     </div>
-                    {a.starred && (
-                      <div className="absolute right-2 top-2 grid size-6 place-items-center rounded-md bg-background/80 backdrop-blur">
-                        <Star className="size-3.5 fill-chart-4 text-chart-4" />
-                      </div>
-                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleStar(a.id)
+                      }}
+                      aria-label={isStarred(a.id) ? '取消收藏' : '收藏'}
+                      aria-pressed={isStarred(a.id)}
+                      className="absolute right-2 top-2 grid size-6 place-items-center rounded-md bg-background/80 backdrop-blur transition-transform hover:scale-110 active:scale-90"
+                    >
+                      <Star
+                        className={cn(
+                          'size-3.5 transition-colors',
+                          isStarred(a.id)
+                            ? 'fill-chart-4 text-chart-4'
+                            : 'text-muted-foreground',
+                        )}
+                      />
+                    </button>
                   </div>
                   <div className="p-3">
                     <p className="truncate text-sm font-medium">{a.title}</p>
@@ -277,7 +350,8 @@ export default function AssetsPage() {
                   return (
                     <tr
                       key={a.id}
-                      className="border-b border-border/60 last:border-0 transition-colors hover:bg-secondary/40"
+                      onClick={() => setSelected(a)}
+                      className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-secondary/40"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -313,13 +387,33 @@ export default function AssetsPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           <button
-                            className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDownload(a.id)
+                            }}
+                            disabled={downloadingId === a.id}
+                            className={cn(
+                              'grid size-7 place-items-center rounded-md transition-colors hover:bg-secondary active:scale-90',
+                              downloadedId === a.id
+                                ? 'text-primary'
+                                : 'text-muted-foreground hover:text-foreground',
+                            )}
                             aria-label="下载"
                           >
-                            <Download className="size-4" />
+                            {downloadingId === a.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : downloadedId === a.id ? (
+                              <CheckCircle2 className="size-4" />
+                            ) : (
+                              <Download className="size-4" />
+                            )}
                           </button>
                           <button
-                            className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelected(a)
+                            }}
+                            className="grid size-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-90"
                             aria-label="更多"
                           >
                             <MoreVertical className="size-4" />
@@ -333,6 +427,152 @@ export default function AssetsPage() {
             </table>
           </Card>
         )}
+      </div>
+
+      {selected && (
+        <AssetDetail
+          asset={selected}
+          starred={isStarred(selected.id)}
+          downloading={downloadingId === selected.id}
+          downloaded={downloadedId === selected.id}
+          onToggleStar={() => toggleStar(selected.id)}
+          onDownload={() => handleDownload(selected.id)}
+          onClose={() => setSelected(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+function AssetDetail({
+  asset,
+  starred,
+  downloading,
+  downloaded,
+  onToggleStar,
+  onDownload,
+  onClose,
+}: {
+  asset: Asset
+  starred: boolean
+  downloading: boolean
+  downloaded: boolean
+  onToggleStar: () => void
+  onDownload: () => void
+  onClose: () => void
+}) {
+  const Icon = typeMeta[asset.type].icon
+  const meta = [
+    { icon: Tag, label: '类型', value: asset.type },
+    { icon: HardDrive, label: '大小', value: asset.size },
+    { icon: Clock, label: '更新时间', value: asset.updatedAt },
+    { icon: Sparkles, label: '来源', value: 'AI 生成引擎' },
+  ]
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="asset-detail-title"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl sm:rounded-2xl md:flex-row"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Preview */}
+        <div className="relative aspect-[4/3] w-full shrink-0 bg-secondary md:aspect-auto md:w-1/2">
+          <Image src={asset.cover || '/placeholder.svg'} alt={asset.title} fill className="object-cover" />
+          <div className="absolute left-3 top-3 flex items-center gap-1 rounded-md bg-background/80 px-2 py-1 text-xs backdrop-blur">
+            <Icon className={cn('size-3.5', typeMeta[asset.type].color)} />
+            {asset.type}
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-start gap-2 border-b border-border p-5">
+            <div className="min-w-0 flex-1">
+              <h2 id="asset-detail-title" className="text-base font-semibold leading-snug">
+                {asset.title}
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {asset.tags.map((t) => (
+                  <Badge key={t} variant="muted" className="px-1.5 py-0 text-[11px]">
+                    {t}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="关闭"
+              className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-90"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 p-5">
+            {meta.map((m) => (
+              <div key={m.label} className="rounded-lg border border-border bg-secondary/30 p-3">
+                <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <m.icon className="size-3" />
+                  {m.label}
+                </p>
+                <p className="mt-1 truncate text-sm font-medium">{m.value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border p-4">
+            <Button
+              className="h-9 flex-1 gap-1.5 active:scale-95"
+              onClick={onDownload}
+              disabled={downloading}
+            >
+              {downloading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  下载中…
+                </>
+              ) : downloaded ? (
+                <>
+                  <CheckCircle2 className="size-4" />
+                  已下载
+                </>
+              ) : (
+                <>
+                  <Download className="size-4" />
+                  下载素材
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              className={cn('h-9 gap-1.5 active:scale-95', starred && 'border-primary/50 text-primary')}
+              onClick={onToggleStar}
+            >
+              <Star className={cn('size-4', starred && 'fill-chart-4 text-chart-4')} />
+              {starred ? '已收藏' : '收藏'}
+            </Button>
+            <Button variant="outline" size="icon" className="h-9 w-9 active:scale-95" aria-label="分享">
+              <Share2 className="size-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-9 w-9 active:scale-95" aria-label="重命名">
+              <Pencil className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 text-destructive hover:text-destructive active:scale-95"
+              aria-label="删除"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
