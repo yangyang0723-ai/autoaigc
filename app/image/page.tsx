@@ -270,7 +270,17 @@ export default function ImagePage() {
           ))}
         </div>
 
-
+        {/* Export ratios */}
+        <Card className="p-5">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-muted p-3">
+            <span className="text-xs text-muted-foreground">已选中第 {selected + 1} 张 · 一键导出：</span>
+            {ratios.map((r) => (
+              <Badge key={r.value} variant="outline">
+                {r.label} {r.value}
+              </Badge>
+            ))}
+          </div>
+        </Card>
       </div>
     </div>
   )
