@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ShieldCheck,
   ScanLine,
@@ -13,6 +13,7 @@ import {
   Database,
   ChevronRight,
   Sparkles,
+  X,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -50,39 +51,88 @@ const severityBadge: Record<Severity, { variant: 'danger' | 'warning' | 'muted';
   low: { variant: 'muted', label: '提示' },
 }
 
+type LibraryEntry = {
+  term: string
+  note: string
+  tag: { variant: 'danger' | 'warning' | 'muted' | 'success'; label: string }
+}
+type Library = {
+  key: string
+  icon: typeof Gavel
+  title: string
+  desc: string
+  count: string
+  tag: string
+  tone: string
+  updatedAt: string
+  entries: LibraryEntry[]
+}
+
 // 外部知识库已接入的知识域（体现行业专业性）
-const libraries = [
+const libraries: Library[] = [
   {
+    key: 'platform',
     icon: Gavel,
     title: '平台规则库',
     desc: '广告法、价格法及抖音 / 小红书 / 视频号 / 微信内容规范',
     count: '1,286 条',
     tag: '实时同步',
     tone: 'bg-chart-2/12 text-chart-2',
+    updatedAt: '2026-07-28 · 实时同步',
+    entries: [
+      { term: '绝对化用语禁用', note: '“国家级 / 最高级 / 第一品牌”等违反《广告法》第九条，改为“同级领先”。', tag: { variant: 'danger', label: '广告法' } },
+      { term: '价格明码标价', note: '“全网最低 / 骨折价”需有依据，建议改为“限时优惠价”并标注有效期。', tag: { variant: 'danger', label: '价格法' } },
+      { term: '站外导流限制', note: '“加微信 / 扫码领取”受平台限制，改用官方线索组件挂载。', tag: { variant: 'warning', label: '平台公约' } },
+      { term: '资质与免责标注', note: '促销、抽奖类内容需标注活动规则与最终解释权说明。', tag: { variant: 'muted', label: '合规提示' } },
+    ],
   },
   {
+    key: 'sensitive',
     icon: AlertTriangle,
     title: '敏感词库',
     desc: '违禁词、虚假宣传、金融保值承诺、安全绝对化用语',
     count: '9,540 词',
     tag: 'v3.2',
     tone: 'bg-destructive/12 text-destructive',
+    updatedAt: '2026-07-25 · v3.2',
+    entries: [
+      { term: '永不自燃 / 绝对安全', note: '安全性能禁止绝对承诺，引用 C-NCAP 五星等权威测试替代。', tag: { variant: 'danger', label: '高风险' } },
+      { term: '保值率100% / 永不贬值', note: '金融保值承诺需删除或补充“具体以合同为准”。', tag: { variant: 'danger', label: '高风险' } },
+      { term: '零风险 / 稳赚', note: '涉及投资回报的夸大表述，一律移除。', tag: { variant: 'danger', label: '高风险' } },
+      { term: '包过户 / 包上牌', note: '服务承诺需明确前置条件，避免“包”字绝对化表述。', tag: { variant: 'warning', label: '中风险' } },
+    ],
   },
   {
+    key: 'knowhow',
     icon: BookOpen,
     title: '行业 know-how',
     desc: '续航 / 能耗工况标注、智驾等级表述、参数合规写法',
     count: '648 条',
     tag: '专家维护',
     tone: 'bg-accent/12 text-accent',
+    updatedAt: '2026-07-20 · 专家维护',
+    entries: [
+      { term: '续航里程标注', note: '须注明测试工况（CLTC / WLTP）及“实际续航因路况而异”。', tag: { variant: 'warning', label: '标注规范' } },
+      { term: '智能驾驶等级', note: '量产功能应表述为“组合辅助驾驶（L2）”，禁用“自动/无人驾驶”。', tag: { variant: 'danger', label: '智驾规范' } },
+      { term: '能耗 / 油耗数据', note: '标注数据来源与实验室工况说明，避免“零油耗”等误导。', tag: { variant: 'muted', label: '能耗规范' } },
+      { term: '参数合规写法', note: '峰值功率、扭矩、充电时长须标注测试条件与单位。', tag: { variant: 'muted', label: '参数规范' } },
+    ],
   },
   {
+    key: 'template',
     icon: Sparkles,
     title: '话术优化模板',
     desc: '合规且高转化的汽车营销话术范式与替换建议',
     count: '312 套',
     tag: '每周更新',
     tone: 'bg-primary/12 text-primary',
+    updatedAt: '2026-07-27 · 每周更新',
+    entries: [
+      { term: '上市造势话术', note: '“同级领先的智能座舱体验”替代“国家级豪华”，合规且有记忆点。', tag: { variant: 'success', label: '推荐' } },
+      { term: '续航卖点话术', note: '“CLTC 工况续航 700km，长途出行更从容”替代“超长续航无忧”。', tag: { variant: 'success', label: '推荐' } },
+      { term: '安全卖点话术', note: '“C-NCAP 五星安全认证”替代“绝对安全”，用权威背书增强说服力。', tag: { variant: 'success', label: '推荐' } },
+      { term: '促单引导话术', note: '“到店试驾享专属礼遇”替代“加微信抢购”，规避导流风险。', tag: { variant: 'success', label: '推荐' } },
+    ],
   },
 ]
 
@@ -94,6 +144,20 @@ export default function KnowledgePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ValidateResult | null>(null)
+  const [selected, setSelected] = useState<Library | null>(null)
+
+  useEffect(() => {
+    if (!selected) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelected(null)
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [selected])
 
   async function validate() {
     if (!content.trim() || loading) return
@@ -293,6 +357,7 @@ export default function KnowledgePage() {
                   <button
                     key={lib.title}
                     type="button"
+                    onClick={() => setSelected(lib)}
                     className="group flex w-full items-center gap-3 rounded-lg border border-border p-3 text-left transition-colors hover:border-primary/40 hover:bg-secondary/40"
                   >
                     <span className={cn('grid size-10 shrink-0 place-items-center rounded-lg', lib.tone)}>
@@ -328,6 +393,76 @@ export default function KnowledgePage() {
           </Card>
         </div>
       </div>
+
+      {/* Library detail modal */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="kb-detail-title"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-2xl sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 border-b border-border p-5">
+              <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl', selected.tone)}>
+                <selected.icon className="size-5.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h2 id="kb-detail-title" className="truncate text-base font-semibold">
+                    {selected.title}
+                  </h2>
+                  <Badge variant="muted" className="shrink-0 px-1.5 py-0 text-[10px]">
+                    {selected.tag}
+                  </Badge>
+                </div>
+                <p className="mt-0.5 text-xs text-muted-foreground">{selected.desc}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground/70">
+                  {selected.count} · 更新 {selected.updatedAt}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                aria-label="关闭"
+                className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between px-5 pt-4">
+              <p className="text-xs font-medium text-muted-foreground">代表性词条 · 节选</p>
+              <span className="text-[11px] text-muted-foreground/70">共 {selected.count}</span>
+            </div>
+
+            <ul className="space-y-2.5 overflow-y-auto p-5 pt-3">
+              {selected.entries.map((entry) => (
+                <li key={entry.term} className="rounded-lg border border-border bg-secondary/30 p-3.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium">{entry.term}</span>
+                    <Badge variant={entry.tag.variant} className="px-1.5 py-0 text-[11px]">
+                      {entry.tag.label}
+                    </Badge>
+                  </div>
+                  <p className="mt-1.5 text-sm text-muted-foreground">{entry.note}</p>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex items-center justify-between gap-2 border-t border-border p-4">
+              <p className="text-[11px] text-muted-foreground/70">数据来源：外部知识库 auto-kb v3.2</p>
+              <Button variant="outline" size="sm" onClick={() => setSelected(null)}>
+                关闭
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
