@@ -63,6 +63,51 @@ export default function TextPage() {
   const [items, setItems] = useState(outline)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [converting, setConverting] = useState(false)
+  const [convertedTo, setConvertedTo] = useState<string | null>(null)
+  const [copiedKeyword, setCopiedKeyword] = useState<string | null>(null)
+
+  const articleText = `实测 2026 款星海 SUV：这台旗舰把智能座舱卷到了新高度
+
+作为一台定价 25 万级的新能源旗舰 SUV，星海用一块 15.6 英寸 3K 中控屏、高通 8295 芯片和城市 NOA 智驾，重新定义了这个价位的科技体感。
+
+外观设计：科技美学的极致表达
+贯穿式日间行车灯配合封闭式前脸，风阻系数低至 0.23Cd。车身长度 4980mm，轴距 2950mm。`
+
+  async function copyText(text: string, onDone: () => void) {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      // 剪贴板不可用时静默降级，仍给出视觉反馈
+    }
+    onDone()
+  }
+
+  function handleCopyArticle() {
+    copyText(articleText, () => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    })
+  }
+
+  function handleCopyKeyword(k: string) {
+    copyText(k, () => {
+      setCopiedKeyword(k)
+      setTimeout(() => setCopiedKeyword((cur) => (cur === k ? null : cur)), 1500)
+    })
+  }
+
+  function handleConvert() {
+    if (converting) return
+    setConverting(true)
+    setConvertedTo(null)
+    setTimeout(() => {
+      setConverting(false)
+      setConvertedTo(platform)
+      setTimeout(() => setConvertedTo((cur) => (cur === platform ? null : cur)), 2200)
+    }, 1100)
+  }
 
   function generate() {
     setStatus('generating')
@@ -231,9 +276,26 @@ export default function TextPage() {
                 <FileText className="size-4 text-primary" />
                 图文混排预览
               </div>
-              <Button variant="outline" size="sm" className="h-8 gap-1.5">
-                <Copy className="size-3.5" />
-                复制
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  'h-8 gap-1.5 transition-colors active:scale-95',
+                  copied && 'border-primary/50 text-primary',
+                )}
+                onClick={handleCopyArticle}
+              >
+                {copied ? (
+                  <>
+                    <CheckCircle2 className="size-3.5" />
+                    已复制
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-3.5" />
+                    复制
+                  </>
+                )}
               </Button>
             </div>
             <div className="max-h-[520px] space-y-4 overflow-y-auto p-6">
@@ -250,7 +312,7 @@ export default function TextPage() {
               <p className="text-xs text-primary">图 1 · 星海 SUV 外观科技美学</p>
               <h3 className="text-base font-semibold">外观设计：科技美学的极致表达</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                贯穿式日间行车灯配合封闭式前脸，风阻系数低至 0.23Cd。车身长度 4980mm，轴距
+                贯穿式日间行车灯配合封闭式前脸，风阻���数低至 0.23Cd。车身长度 4980mm，轴距
                 2950mm，为后排腿部空间打下扎实基础。
                 <span className="rounded bg-primary/15 px-1 text-primary">
                   （数据来源：车型数据库 · FR-TXT-003 专业知识注入）
@@ -278,9 +340,20 @@ export default function TextPage() {
                 <p className="mb-2 text-xs font-semibold">长尾关键词建议</p>
                 <div className="flex flex-wrap gap-1.5">
                   {['星海SUV怎么样', '25万新能源SUV', '智能座舱对比', '0首付购车'].map((k) => (
-                    <Badge key={k} variant="outline" className="text-[10px]">
-                      {k}
-                    </Badge>
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => handleCopyKeyword(k)}
+                      className={cn(
+                        'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors active:scale-95',
+                        copiedKeyword === k
+                          ? 'border-primary/50 bg-primary/15 text-primary'
+                          : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                      )}
+                    >
+                      {copiedKeyword === k && <CheckCircle2 className="size-3" />}
+                      {copiedKeyword === k ? '已复制' : k}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -298,9 +371,32 @@ export default function TextPage() {
                   </Chip>
                 ))}
               </div>
-              <Button variant="outline" size="sm" className="mt-3 h-8 w-full gap-1.5">
-                <Wand2 className="size-3.5" />
-                转换为「{platform}」格式
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  'mt-3 h-8 w-full gap-1.5 transition-colors active:scale-95',
+                  convertedTo === platform && 'border-primary/50 text-primary',
+                )}
+                onClick={handleConvert}
+                disabled={converting}
+              >
+                {converting ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" />
+                    正在适配「{platform}」…
+                  </>
+                ) : convertedTo === platform ? (
+                  <>
+                    <CheckCircle2 className="size-3.5" />
+                    已适配「{platform}」格式
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="size-3.5" />
+                    转换为「{platform}」格式
+                  </>
+                )}
               </Button>
             </Card>
           </div>
