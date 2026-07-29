@@ -28,6 +28,12 @@ const writeStyles = ['专业评测风', '种草安利风', '故事叙事风', '�
 const tones = ['正式', '轻松', '激情', '理性']
 const lengths = ['短文案 100字', '中文案 500字', '长文案 2000字+']
 const platforms = ['公众号', '小红书', '微博', '知乎']
+const imageSizes = [
+  { label: '横图 16:9', ratio: 'aspect-[16/9]' },
+  { label: '标准 4:3', ratio: 'aspect-[4/3]' },
+  { label: '方图 1:1', ratio: 'aspect-square' },
+  { label: '竖图 3:4', ratio: 'aspect-[3/4]' },
+]
 
 const outline = [
   { h: '一、开篇：为什么这台旗舰 SUV 值得等待', img: false },
@@ -58,6 +64,7 @@ export default function TextPage() {
   const [tone, setTone] = useState(tones[1])
   const [length, setLength] = useState(lengths[2])
   const [platform, setPlatform] = useState(platforms[0])
+  const [imageSize, setImageSize] = useState(imageSizes[0])
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
   const [step, setStep] = useState(0)
   const [items, setItems] = useState(outline)
@@ -187,10 +194,18 @@ export default function TextPage() {
             ))}
           </div>
           <p className="mb-2 text-xs font-semibold">字数控制</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             {lengths.map((l) => (
               <Chip key={l} active={length === l} onClick={() => setLength(l)}>
                 {l}
+              </Chip>
+            ))}
+          </div>
+          <p className="mb-2 text-xs font-semibold">配图尺寸</p>
+          <div className="flex flex-wrap gap-2">
+            {imageSizes.map((s) => (
+              <Chip key={s.label} active={imageSize.label === s.label} onClick={() => setImageSize(s)}>
+                {s.label}
               </Chip>
             ))}
           </div>
@@ -306,7 +321,7 @@ export default function TextPage() {
                 作为一台定价 25 万级的新能源旗舰 SUV，星海用一块 15.6 英寸 3K 中控屏、高通 8295
                 芯片和城市 NOA 智驾，重新定义了这个价位的科技体感。这篇实测带你从外观、座舱、动力到金融政策，一次看懂。
               </p>
-              <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
+              <div className={cn('relative overflow-hidden rounded-lg', imageSize.ratio)}>
                 <Image src="/cars/blue-suv-poster.png" alt="星海 SUV 外观" fill className="object-cover" />
               </div>
               <p className="text-xs text-primary">图 1 · 星海 SUV 外观科技美学</p>
@@ -318,7 +333,7 @@ export default function TextPage() {
                   （数据来源：车型数据库 · FR-TXT-003 专业知识注入）
                 </span>
               </p>
-              <div className="relative aspect-[16/9] overflow-hidden rounded-lg">
+              <div className={cn('relative overflow-hidden rounded-lg', imageSize.ratio)}>
                 <Image src="/cars/showroom.png" alt="星海 SUV 座舱" fill className="object-cover" />
               </div>
               <p className="text-xs text-primary">图 2 · 越级数字化座舱体验</p>

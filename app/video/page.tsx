@@ -29,6 +29,11 @@ import {
 const videoTypes = ['口播短视频', '车型展示视频', '促销快闪视频', '直播切片', '用户证言视频']
 const digitalHumans = ['专业男主播', '亲和女主播', '活力年轻款', '商务精英款']
 const voices = ['磁性男声', '甜美女声', '沉稳解说', '激情促销']
+const videoSizes = [
+  { label: '横版 16:9', ratio: 'aspect-video', wrap: 'max-w-full', tag: '视频号 / 官网' },
+  { label: '竖版 9:16', ratio: 'aspect-[9/16]', wrap: 'mx-auto max-w-[300px]', tag: '抖音 / 快手' },
+  { label: '方形 1:1', ratio: 'aspect-square', wrap: 'mx-auto max-w-[460px]', tag: '朋友圈' },
+]
 
 const storyboard = [
   { t: '00:00', desc: '开场：车辆缓缓驶入，聚焦前脸科技灯组', dur: '3s', img: '/cars/blue-suv-poster.png' },
@@ -56,6 +61,7 @@ export default function VideoPage() {
   const [type, setType] = useState(videoTypes[0])
   const [human, setHuman] = useState(digitalHumans[0])
   const [voice, setVoice] = useState(voices[0])
+  const [videoSize, setVideoSize] = useState(videoSizes[0])
   const [active, setActive] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
@@ -105,12 +111,47 @@ export default function VideoPage() {
             className="w-full resize-none rounded-lg border border-border bg-background p-3 text-sm leading-relaxed outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
           />
           <p className="mb-2 mt-4 text-xs font-semibold">视频类型</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             {videoTypes.map((v) => (
               <Chip key={v} active={type === v} onClick={() => setType(v)}>
                 {v}
               </Chip>
             ))}
+          </div>
+          <p className="mb-2 text-xs font-semibold">视频尺寸</p>
+          <div className="grid grid-cols-3 gap-2">
+            {videoSizes.map((s) => {
+              const on = videoSize.label === s.label
+              return (
+                <button
+                  key={s.label}
+                  type="button"
+                  onClick={() => setVideoSize(s)}
+                  className={cn(
+                    'flex flex-col items-center gap-1.5 rounded-lg border p-2.5 transition-all active:scale-[0.97]',
+                    on
+                      ? 'border-primary bg-primary/8 ring-1 ring-primary/30'
+                      : 'border-border hover:border-primary/40 hover:bg-secondary/40',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'rounded-sm border-2',
+                      on ? 'border-primary' : 'border-muted-foreground/50',
+                      s.ratio === 'aspect-[9/16]'
+                        ? 'h-6 w-3.5'
+                        : s.ratio === 'aspect-square'
+                          ? 'size-5'
+                          : 'h-3.5 w-6',
+                    )}
+                  />
+                  <span className={cn('text-[11px] font-medium', on ? 'text-primary' : 'text-foreground')}>
+                    {s.label}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground">{s.tag}</span>
+                </button>
+              )
+            })}
           </div>
         </Card>
 
@@ -198,11 +239,12 @@ export default function VideoPage() {
       {/* Main preview + timeline */}
       <div className="flex flex-col gap-4">
         {status === 'generating' ? (
-          <GenerationProcess step={step} human={human} voice={voice} />
+          <GenerationProcess step={step} human={human} voice={voice} size={videoSize} />
         ) : (
         <>
         <Card className="overflow-hidden p-0">
-          <div className="relative aspect-video">
+          <div className="flex justify-center bg-black/5">
+          <div className={cn('relative w-full', videoSize.ratio, videoSize.wrap)}>
             <Image
               src={storyboard[active].img || '/placeholder.svg'}
               alt="视频预览"
@@ -226,6 +268,7 @@ export default function VideoPage() {
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg bg-black/60 px-4 py-1.5 text-sm text-white">
               {storyboard[active].desc}
             </div>
+          </div>
           </div>
           {/* Timeline */}
           <div className="border-t border-border p-4">
@@ -332,7 +375,17 @@ export default function VideoPage() {
   )
 }
 
-function GenerationProcess({ step, human, voice }: { step: number; human: string; voice: string }) {
+function GenerationProcess({
+  step,
+  human,
+  voice,
+  size,
+}: {
+  step: number
+  human: string
+  voice: string
+  size: { label: string; ratio: string; wrap: string }
+}) {
   const progress = Math.round((Math.min(step, genSteps.length) / genSteps.length) * 100)
   return (
     <Card className="glow-primary overflow-hidden p-0">
@@ -343,7 +396,7 @@ function GenerationProcess({ step, human, voice }: { step: number; human: string
         <div className="min-w-0">
           <p className="text-sm font-semibold">AI 正在合成视频</p>
           <p className="text-xs text-muted-foreground">
-            {human} · {voice} · 智能分镜与卡点合成中
+            {human} · {voice} · {size.label} · 智能分镜与卡点合成中
           </p>
         </div>
         <Badge variant="accent" className="ml-auto shrink-0 gap-1">
@@ -353,7 +406,7 @@ function GenerationProcess({ step, human, voice }: { step: number; human: string
       </div>
 
       {/* Rendering canvas skeleton */}
-      <div className="relative aspect-video bg-muted">
+      <div className={cn('relative bg-muted', size.ratio, size.wrap)}>
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted to-secondary" />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <span className="grid size-14 place-items-center rounded-full bg-primary/90 text-primary-foreground">

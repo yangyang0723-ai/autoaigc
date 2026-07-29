@@ -26,6 +26,11 @@ import {
 
 const sceneList = ['每日早安', '车型推荐', '促销活动', '交车仪式', '用车知识', '节日祝福']
 const personas = ['专业顾问', '亲切朋友', '幽默达人', '励志导师']
+const imageSizes = [
+  { label: '方图 1:1', ratio: 'aspect-square' },
+  { label: '竖图 3:4', ratio: 'aspect-[3/4]' },
+  { label: '横图 4:3', ratio: 'aspect-[4/3]' },
+]
 const calendar = [
   { day: '周一', topic: '早安 · 正能量', done: true },
   { day: '周二', topic: '车型种草 · 星海 SUV', done: true },
@@ -59,6 +64,7 @@ const genSteps = [
 export default function MomentsPage() {
   const [scene, setScene] = useState(sceneList[1])
   const [persona, setPersona] = useState(personas[0])
+  const [imageSize, setImageSize] = useState(imageSizes[0])
   const [step, setStep] = useState(3)
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
   const [genStep, setGenStep] = useState(0)
@@ -176,10 +182,19 @@ export default function MomentsPage() {
                 </div>
               ),
             )}
-            <button className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground">
+            <button className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground active:scale-95">
               <ImagePlus className="size-5" />
               <span className="text-[10px]">上传</span>
             </button>
+          </div>
+
+          <p className="mb-2 mt-4 text-xs font-semibold">配图尺寸</p>
+          <div className="flex flex-wrap gap-2">
+            {imageSizes.map((s) => (
+              <Chip key={s.label} active={imageSize.label === s.label} onClick={() => setImageSize(s)}>
+                {s.label}
+              </Chip>
+            ))}
           </div>
 
           <div className="mt-4 flex gap-2">
@@ -253,7 +268,7 @@ export default function MomentsPage() {
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-1.5">
                   {['/cars/blue-suv-poster.png', '/cars/showroom.png'].map((src) => (
-                    <div key={src} className="relative aspect-square overflow-hidden rounded-md">
+                    <div key={src} className={cn('relative overflow-hidden rounded-md', imageSize.ratio)}>
                       <Image src={src || '/placeholder.svg'} alt="朋友圈配图" fill className="object-cover" />
                       {watermarks.includes('个人二维码 / 联系方式') && (
                         <span className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded bg-black/50 px-1 py-0.5 text-[8px] text-white">
