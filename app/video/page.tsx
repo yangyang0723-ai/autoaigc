@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import {
   Sparkles,
   Play,
+  Pause,
   Film,
   UserSquare2,
   AudioLines,
@@ -17,6 +18,12 @@ import {
   Radio,
   Wand2,
   Captions,
+  Loader2,
+  CheckCircle2,
+  Download,
+  FileVideo,
+  Mic2,
+  Music4,
 } from 'lucide-react'
 
 const videoTypes = ['口播短视频', '车型展示视频', '促销快闪视频', '直播切片', '用户证言视频']
@@ -37,11 +44,51 @@ const variants = [
   { label: '60s 方形', ratio: '1:1', tag: '朋友圈' },
 ]
 
+const genSteps = [
+  { icon: Sparkles, label: '解析脚本与卖点', desc: '拆解主题、卖点与目标平台' },
+  { icon: Film, label: '生成智能分镜', desc: '编排 5 个镜头与运镜节奏' },
+  { icon: UserSquare2, label: '渲染数字人口播', desc: '驱动数字人表情与唇形同步' },
+  { icon: Mic2, label: 'AI 配音与字幕', desc: '合成音色并对齐自动字幕' },
+  { icon: Music4, label: '智能卡点合成', desc: '匹配 BGM 卡点并输出成片' },
+]
+
 export default function VideoPage() {
   const [type, setType] = useState(videoTypes[0])
   const [human, setHuman] = useState(digitalHumans[0])
   const [voice, setVoice] = useState(voices[0])
   const [active, setActive] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
+  const [step, setStep] = useState(0)
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploaded, setUploaded] = useState(false)
+
+  function generate() {
+    setStatus('generating')
+    setStep(0)
+    setPlaying(false)
+    let i = 0
+    const timer = setInterval(() => {
+      i += 1
+      setStep(i)
+      if (i >= genSteps.length) {
+        clearInterval(timer)
+        setTimeout(() => setStatus('done'), 600)
+      }
+    }, 780)
+  }
+
+  function handleUpload() {
+    if (uploading) return
+    setUploading(true)
+    setUploaded(false)
+    setTimeout(() => {
+      setUploading(false)
+      setUploaded(true)
+      setTimeout(() => setUploaded(false), 2200)
+    }, 1200)
+  }
 
   return (
     <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[360px_1fr]">
@@ -100,20 +147,60 @@ export default function VideoPage() {
           <p className="text-xs leading-relaxed text-muted-foreground">
             接入直播流，AI 自动识别高光时刻（互动高峰 / 成交时刻 / 精彩讲解），一次直播产出 10-30 条切片。
           </p>
-          <Button variant="outline" size="sm" className="mt-3 h-8 w-full gap-1.5">
-            <Scissors className="size-3.5" />
-            上传直播回放
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              'mt-3 h-8 w-full gap-1.5 transition-colors active:scale-95',
+              uploaded && 'border-primary/50 text-primary',
+            )}
+            onClick={handleUpload}
+            disabled={uploading}
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                正在解析直播流…
+              </>
+            ) : uploaded ? (
+              <>
+                <CheckCircle2 className="size-3.5" />
+                已生成 18 条切片
+              </>
+            ) : (
+              <>
+                <Scissors className="size-3.5" />
+                上传直播回放
+              </>
+            )}
           </Button>
         </Card>
 
-        <Button className="h-11 gap-2">
-          <Sparkles className="size-4" />
-          一键成片（≤ 3 分钟）
+        <Button
+          className="h-11 gap-2"
+          onClick={generate}
+          disabled={status === 'generating'}
+        >
+          {status === 'generating' ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              AI 正在合成视频…
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-4" />
+              {status === 'done' ? '重新一键成片' : '一键成片（≤ 3 分钟）'}
+            </>
+          )}
         </Button>
       </div>
 
       {/* Main preview + timeline */}
       <div className="flex flex-col gap-4">
+        {status === 'generating' ? (
+          <GenerationProcess step={step} human={human} voice={voice} />
+        ) : (
+        <>
         <Card className="overflow-hidden p-0">
           <div className="relative aspect-video">
             <Image
@@ -122,9 +209,14 @@ export default function VideoPage() {
               fill
               className="object-cover"
             />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <button className="flex size-16 items-center justify-center rounded-full bg-primary/90 text-primary-foreground transition-transform hover:scale-105">
-                <Play className="size-7 fill-current" />
+            <div className={cn('absolute inset-0 flex items-center justify-center transition-colors', playing ? 'bg-black/10' : 'bg-black/30')}>
+              <button
+                type="button"
+                onClick={() => setPlaying((p) => !p)}
+                aria-label={playing ? '暂停' : '播放'}
+                className="flex size-16 items-center justify-center rounded-full bg-primary/90 text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+              >
+                {playing ? <Pause className="size-7 fill-current" /> : <Play className="size-7 fill-current" />}
               </button>
             </div>
             <div className="absolute left-4 top-4 flex gap-2">
@@ -183,31 +275,171 @@ export default function VideoPage() {
             视频变体生成（FR-VID-006）· 一条母视频多版本 A/B 测试
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {variants.map((v) => (
-              <div
-                key={v.label}
-                className="flex items-center gap-3 rounded-lg border border-border bg-background p-3"
-              >
-                <div
+            {variants.map((v) => {
+              const on = selectedVariant === v.label
+              return (
+                <button
+                  key={v.label}
+                  type="button"
+                  onClick={() => setSelectedVariant(on ? null : v.label)}
                   className={cn(
-                    'flex shrink-0 items-center justify-center rounded bg-primary/15 text-primary',
-                    v.ratio === '9:16' ? 'h-12 w-7' : v.ratio === '1:1' ? 'size-10' : 'h-7 w-12',
+                    'flex items-center gap-3 rounded-lg border bg-background p-3 text-left transition-all active:scale-[0.98]',
+                    on
+                      ? 'border-primary bg-primary/8 ring-1 ring-primary/30'
+                      : 'border-border hover:border-primary/40 hover:bg-secondary/40',
                   )}
                 >
-                  <Play className="size-3.5 fill-current" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{v.label}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {v.ratio} · {v.tag}
-                  </p>
-                </div>
-              </div>
-            ))}
+                  <div
+                    className={cn(
+                      'flex shrink-0 items-center justify-center rounded bg-primary/15 text-primary',
+                      v.ratio === '9:16' ? 'h-12 w-7' : v.ratio === '1:1' ? 'size-10' : 'h-7 w-12',
+                    )}
+                  >
+                    <Play className="size-3.5 fill-current" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{v.label}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {v.ratio} · {v.tag}
+                    </p>
+                  </div>
+                  {on ? (
+                    <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                  ) : (
+                    <Download className="size-4 shrink-0 text-muted-foreground/60" />
+                  )}
+                </button>
+              )
+            })}
           </div>
+          {selectedVariant && (
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/8 px-3 py-2 text-xs">
+              <span className="flex items-center gap-1.5 font-medium text-primary">
+                <FileVideo className="size-3.5" />
+                已选择「{selectedVariant}」用于导出
+              </span>
+              <Button size="sm" className="h-7 gap-1.5 px-2.5">
+                <Download className="size-3.5" />
+                导出
+              </Button>
+            </div>
+          )}
         </Card>
+        </>
+        )}
       </div>
     </div>
+  )
+}
+
+function GenerationProcess({ step, human, voice }: { step: number; human: string; voice: string }) {
+  const progress = Math.round((Math.min(step, genSteps.length) / genSteps.length) * 100)
+  return (
+    <Card className="glow-primary overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+        <span className="grid size-8 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Sparkles className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">AI 正在合成视频</p>
+          <p className="text-xs text-muted-foreground">
+            {human} · {voice} · 智能分镜与卡点合成中
+          </p>
+        </div>
+        <Badge variant="accent" className="ml-auto shrink-0 gap-1">
+          <Loader2 className="size-3 animate-spin" />
+          {progress}%
+        </Badge>
+      </div>
+
+      {/* Rendering canvas skeleton */}
+      <div className="relative aspect-video bg-muted">
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-muted to-secondary" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <span className="grid size-14 place-items-center rounded-full bg-primary/90 text-primary-foreground">
+            <FileVideo className="size-6" />
+          </span>
+          <div className="flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
+            <Loader2 className="size-3 animate-spin" />
+            正在渲染第 {Math.min(step + 1, genSteps.length)} / {genSteps.length} 阶段
+          </div>
+        </div>
+        {/* faux waveform */}
+        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-end gap-0.5">
+          {Array.from({ length: 24 }).map((_, i) => (
+            <span
+              key={i}
+              className="w-1 animate-pulse rounded-full bg-primary/70"
+              style={{ height: `${8 + ((i * 7) % 20)}px`, animationDelay: `${(i % 6) * 90}ms` }}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="px-5 pt-4">
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step timeline */}
+      <div className="space-y-1 p-5">
+        {genSteps.map((s, i) => {
+          const done = i < step
+          const activeStep = i === step
+          const Icon = s.icon
+          return (
+            <div
+              key={s.label}
+              className={cn(
+                'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors',
+                activeStep
+                  ? 'border-primary/40 bg-primary/8'
+                  : done
+                    ? 'border-transparent'
+                    : 'border-transparent opacity-50',
+              )}
+            >
+              <span
+                className={cn(
+                  'grid size-8 shrink-0 place-items-center rounded-lg',
+                  done
+                    ? 'bg-primary/15 text-primary'
+                    : activeStep
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {done ? (
+                  <CheckCircle2 className="size-4" />
+                ) : activeStep ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Icon className="size-4" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{s.label}</p>
+                <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
+              </div>
+              {done && (
+                <Badge variant="success" className="shrink-0 text-[10px]">
+                  完成
+                </Badge>
+              )}
+              {activeStep && (
+                <Badge variant="muted" className="shrink-0 text-[10px]">
+                  进行中
+                </Badge>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </Card>
   )
 }
 
