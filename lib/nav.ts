@@ -88,6 +88,18 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+  {
+    title: '合规中心',
+    items: [
+      {
+        href: '/knowledge',
+        label: '知识库',
+        desc: '规则 / 敏感词 / 行业规范',
+        icon: ShieldCheck,
+        badge: '合规',
+      },
+    ],
+  },
 ]
 
 export const flatNav: NavItem[] = navGroups.flatMap((g) => g.items)
