@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import {
   Sparkles,
   Wand2,
-  Layers,
   Download,
   Heart,
   Maximize2,
@@ -271,40 +270,7 @@ export default function ImagePage() {
           ))}
         </div>
 
-        {/* Smart edit toolbar */}
-        <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Layers className="size-4 text-primary" />
-            智能编辑（FR-IMG-005）
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              { label: 'AI 局部重绘', icon: Wand2 },
-              { label: '文字智能嵌入', icon: ImageIcon },
-              { label: '元素替换', icon: RefreshCw },
-              { label: 'AI 扩图', icon: Maximize2 },
-            ].map((a) => {
-              const Icon = a.icon
-              return (
-                <button
-                  key={a.label}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-border bg-background p-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                >
-                  <Icon className="size-4 text-primary" />
-                  {a.label}
-                </button>
-              )
-            })}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-lg bg-muted p-3">
-            <span className="text-xs text-muted-foreground">已选中第 {selected + 1} 张 · 一键导出：</span>
-            {ratios.map((r) => (
-              <Badge key={r.value} variant="outline">
-                {r.label} {r.value}
-              </Badge>
-            ))}
-          </div>
-        </Card>
+
       </div>
     </div>
   )
