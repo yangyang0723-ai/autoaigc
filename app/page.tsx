@@ -35,10 +35,10 @@ const queue = [
 ]
 
 const templates = [
-  { title: '科技新车海报', tag: '图片 · 科技感', img: '/cars/blue-suv-poster.png', uses: '1.2k' },
-  { title: '雪地越野大片', tag: '图片 · 运动感', img: '/cars/red-suv-snow.png', uses: '860' },
-  { title: '都市夜景视频', tag: '视频 · 15s', img: '/cars/city-night.png', uses: '2.4k' },
-  { title: '展厅豪华场景', tag: '图片 · 豪华感', img: '/cars/showroom.png', uses: '640' },
+  { title: '科技新车海报', tag: '图片 · 科技感', img: '/cars/blue-suv-poster.png', uses: '1.2k', href: '/image' },
+  { title: '雪地越野大片', tag: '图片 · 运动感', img: '/cars/red-suv-snow.png', uses: '860', href: '/image' },
+  { title: '都市夜景视频', tag: '视频 · 15s', img: '/cars/city-night.png', uses: '2.4k', href: '/video' },
+  { title: '展厅豪华场景', tag: '图片 · 豪华感', img: '/cars/showroom.png', uses: '640', href: '/image' },
 ]
 
 export default function WorkbenchPage() {
@@ -61,13 +61,19 @@ export default function WorkbenchPage() {
               选择一个生成引擎，让每一位汽车营销人都能像专业创意团队一样高效创作。
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5">
-              <Link href="/image" className={buttonVariants({ className: 'h-9 gap-1.5 px-4' })}>
+              <Link
+                href="/image"
+                className={buttonVariants({ className: 'h-9 gap-1.5 px-4 transition-transform active:scale-95' })}
+              >
                 <Sparkles className="size-4" />
                 开始创作
               </Link>
               <Link
                 href="/analytics"
-                className={buttonVariants({ variant: 'outline', className: 'h-9 gap-1.5 px-4' })}
+                className={buttonVariants({
+                  variant: 'outline',
+                  className: 'h-9 gap-1.5 px-4 transition-transform active:scale-95',
+                })}
               >
                 查看数据看板
                 <ArrowRight className="size-4" />
@@ -123,7 +129,7 @@ export default function WorkbenchPage() {
               <Link
                 key={e.href}
                 href={e.href}
-                className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:glow-primary"
+                className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:glow-primary active:translate-y-0 active:scale-[0.98]"
               >
                 <span className="flex size-10 items-center justify-center rounded-lg bg-primary/12 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="size-5" />
@@ -189,30 +195,40 @@ export default function WorkbenchPage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold">热门模板</h3>
-          <Link href="/assets" className="text-xs text-primary hover:underline">
+          <Link
+            href="/assets"
+            className="inline-flex items-center gap-0.5 text-xs text-primary transition-opacity hover:underline active:opacity-70"
+          >
             查看全部模板库
+            <ArrowRight className="size-3" />
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {templates.map((t) => (
-            <Card key={t.title} className="group overflow-hidden p-0">
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <Image
-                  src={t.img || '/placeholder.svg'}
-                  alt={t.title}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3">
-                  <p className="text-sm font-semibold text-white">{t.title}</p>
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-[11px] text-white/70">{t.tag}</span>
-                    <span className="text-[11px] text-white/70">{t.uses} 次使用</span>
+            <Link key={t.title} href={t.href} className="block">
+              <Card className="group overflow-hidden p-0 transition-all hover:border-primary/40 hover:shadow-lg active:scale-[0.98]">
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image
+                    src={t.img || '/placeholder.svg'}
+                    alt={t.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <span className="absolute right-3 top-3 flex items-center gap-1 rounded-md bg-primary/90 px-2 py-1 text-[11px] font-medium text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                    <Sparkles className="size-3" />
+                    使用模板
+                  </span>
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <p className="text-sm font-semibold text-white">{t.title}</p>
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-[11px] text-white/70">{t.tag}</span>
+                      <span className="text-[11px] text-white/70">{t.uses} 次使用</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
       </section>
