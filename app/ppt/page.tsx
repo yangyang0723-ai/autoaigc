@@ -16,6 +16,11 @@ import {
   FileDown,
   Play,
   LayoutTemplate,
+  Loader2,
+  CheckCircle2,
+  ScanText,
+  PenTool,
+  Images,
 } from 'lucide-react'
 
 const scenes = ['新车发布会', '销售培训课件', '月度经营汇报', '投资人路演']
@@ -33,13 +38,52 @@ const slides = [
 const notes =
   '本页重点强调星海 SUV 在 25 万级市场的差异化优势。开场先抛出"智能座舱越级体验"的核心卖点，配合现场大屏演示 15.6 英寸中控实机操作。数据引用车型数据库最新参数，过渡到下一页竞品对比。建议停留 90 秒。'
 
+const genSteps = [
+  { icon: ScanText, label: '解析主题与受众', desc: '提炼汇报目标与核心信息' },
+  { icon: ListTree, label: '智能编排大纲', desc: '生成 6 页逻辑结构' },
+  { icon: LayoutTemplate, label: '套用专业模板', desc: '匹配汽车行业视觉风格' },
+  { icon: BarChart3, label: '数据可视化生成', desc: '自动生成图表与对比表' },
+  { icon: PenTool, label: '排版与备注生成', desc: '智能配图并撰写演讲备注' },
+]
+
 export default function PptPage() {
   const [scene, setScene] = useState(scenes[0])
   const [template, setTemplate] = useState(templates[0])
   const [current, setCurrent] = useState(0)
+  const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
+  const [step, setStep] = useState(0)
+  const [presenting, setPresenting] = useState(false)
+  const [exporting, setExporting] = useState<null | 'PPTX' | 'PDF'>(null)
+  const [exported, setExported] = useState<null | 'PPTX' | 'PDF'>(null)
+  const [chart, setChart] = useState<string | null>(null)
+
+  function generate() {
+    setStatus('generating')
+    setStep(0)
+    let i = 0
+    const timer = setInterval(() => {
+      i += 1
+      setStep(i)
+      if (i >= genSteps.length) {
+        clearInterval(timer)
+        setTimeout(() => setStatus('done'), 600)
+      }
+    }, 780)
+  }
+
+  function handleExport(fmt: 'PPTX' | 'PDF') {
+    if (exporting) return
+    setExporting(fmt)
+    setExported(null)
+    setTimeout(() => {
+      setExporting(null)
+      setExported(fmt)
+      setTimeout(() => setExported((cur) => (cur === fmt ? null : cur)), 2200)
+    }, 1100)
+  }
 
   return (
-    <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[340px_1fr]">
+    <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
       {/* Left controls */}
       <div className="flex flex-col gap-4">
         <Card className="p-5">
@@ -108,14 +152,27 @@ export default function PptPage() {
           </div>
         </Card>
 
-        <Button className="h-11 gap-2">
-          <Sparkles className="size-4" />
-          AI 一键生成 PPT（≤ 2 分钟）
+        <Button className="h-11 gap-2" onClick={generate} disabled={status === 'generating'}>
+          {status === 'generating' ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              AI 正在生成 PPT…
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-4" />
+              {status === 'done' ? '重新一键生成 PPT' : 'AI 一键生成 PPT（≤ 2 分钟）'}
+            </>
+          )}
         </Button>
       </div>
 
       {/* Main slide preview */}
       <div className="flex flex-col gap-4">
+        {status === 'generating' ? (
+          <GenerationProcess step={step} scene={scene} template={template} />
+        ) : (
+        <>
         <Card className="overflow-hidden p-0">
           <div className="flex items-center justify-between border-b border-border px-5 py-3">
             <div className="flex items-center gap-2 text-sm font-semibold">
@@ -123,24 +180,64 @@ export default function PptPage() {
               第 {current + 1} / {slides.length} 页 · {template}模板
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-8 gap-1.5">
+              <Button
+                variant={presenting ? 'default' : 'outline'}
+                size="sm"
+                className="h-8 gap-1.5 transition-colors active:scale-95"
+                onClick={() => setPresenting((p) => !p)}
+              >
                 <Play className="size-3.5" />
-                演示
+                {presenting ? '退出演示' : '演示'}
               </Button>
-              <Button variant="outline" size="sm" className="h-8 gap-1.5">
-                <FileDown className="size-3.5" />
-                PPTX
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn('h-8 gap-1.5 transition-colors active:scale-95', exported === 'PPTX' && 'border-primary/50 text-primary')}
+                onClick={() => handleExport('PPTX')}
+                disabled={exporting === 'PPTX'}
+              >
+                {exporting === 'PPTX' ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : exported === 'PPTX' ? (
+                  <CheckCircle2 className="size-3.5" />
+                ) : (
+                  <FileDown className="size-3.5" />
+                )}
+                {exported === 'PPTX' ? '已导出' : 'PPTX'}
               </Button>
-              <Button variant="outline" size="sm" className="h-8 gap-1.5">
-                <Download className="size-3.5" />
-                PDF
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn('h-8 gap-1.5 transition-colors active:scale-95', exported === 'PDF' && 'border-primary/50 text-primary')}
+                onClick={() => handleExport('PDF')}
+                disabled={exporting === 'PDF'}
+              >
+                {exporting === 'PDF' ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : exported === 'PDF' ? (
+                  <CheckCircle2 className="size-3.5" />
+                ) : (
+                  <Download className="size-3.5" />
+                )}
+                {exported === 'PDF' ? '已导出' : 'PDF'}
               </Button>
             </div>
           </div>
 
           {/* Slide canvas */}
           <div className="p-5">
-            <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card to-background grid-bg">
+            <div
+              className={cn(
+                'relative aspect-video overflow-hidden rounded-xl border bg-gradient-to-br from-card to-background grid-bg transition-shadow',
+                presenting ? 'border-primary ring-2 ring-primary/40 shadow-lg' : 'border-border',
+              )}
+            >
+              {presenting && (
+                <Badge variant="accent" className="absolute right-3 top-3 z-10 gap-1">
+                  <Play className="size-3 fill-current" />
+                  演示中
+                </Badge>
+              )}
               <div className="absolute inset-0 flex flex-col justify-center gap-4 p-10">
                 <Badge variant="accent" className="w-fit">
                   {scene}
@@ -225,12 +322,32 @@ export default function PptPage() {
               粘贴 Excel 数据，AI 自动推荐最佳图表类型并生成。图表与数据联动，数据更新后自动刷新。
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {['销量趋势', '市场份额', '客户画像', '漏���转化'].map((c) => (
-                <Badge key={c} variant="outline" className="text-[10px]">
-                  {c}
-                </Badge>
-              ))}
+              {['销量趋势', '市场份额', '客户画像', '漏斗转化'].map((c) => {
+                const on = chart === c
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setChart(on ? null : c)}
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors active:scale-95',
+                      on
+                        ? 'border-primary/50 bg-primary/15 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                    )}
+                  >
+                    {on && <CheckCircle2 className="size-3" />}
+                    {c}
+                  </button>
+                )
+              })}
             </div>
+            {chart && (
+              <p className="mt-2 flex items-center gap-1.5 text-[11px] text-primary">
+                <BarChart3 className="size-3" />
+                已为「{chart}」推荐柱状图并插入当前页
+              </p>
+            )}
           </Card>
 
           <Card className="p-5">
@@ -241,8 +358,129 @@ export default function PptPage() {
             <p className="text-xs leading-relaxed text-muted-foreground">{notes}</p>
           </Card>
         </div>
+        </>
+        )}
       </div>
     </div>
+  )
+}
+
+function GenerationProcess({
+  step,
+  scene,
+  template,
+}: {
+  step: number
+  scene: string
+  template: string
+}) {
+  const progress = Math.round((Math.min(step, genSteps.length) / genSteps.length) * 100)
+  return (
+    <Card className="glow-primary overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+        <span className="grid size-8 place-items-center rounded-lg bg-primary/15 text-primary">
+          <Sparkles className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">AI 正在生成 PPT</p>
+          <p className="text-xs text-muted-foreground">
+            {scene} · {template}模板 · 智能编排与排版中
+          </p>
+        </div>
+        <Badge variant="accent" className="ml-auto shrink-0 gap-1">
+          <Loader2 className="size-3 animate-spin" />
+          {progress}%
+        </Badge>
+      </div>
+
+      {/* Deck skeleton */}
+      <div className="p-5">
+        <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-gradient-to-br from-card to-background grid-bg">
+          <div className="absolute inset-0 flex flex-col justify-center gap-4 p-10">
+            <div className="h-5 w-20 animate-pulse rounded bg-primary/30" />
+            <div className="h-8 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+            <div className="mt-2 flex h-24 items-end gap-3">
+              {[45, 62, 58, 78, 90].map((h, i) => (
+                <div
+                  key={i}
+                  className="flex-1 animate-pulse rounded-t bg-gradient-to-t from-primary/30 to-primary/60"
+                  style={{ height: `${h}%`, animationDelay: `${i * 100}ms` }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
+            <Images className="size-3" />
+            正在生成第 {Math.min(step + 1, genSteps.length)} / {genSteps.length} 环节
+          </div>
+        </div>
+      </div>
+
+      <div className="px-5">
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step timeline */}
+      <div className="space-y-1 p-5">
+        {genSteps.map((s, i) => {
+          const done = i < step
+          const activeStep = i === step
+          const Icon = s.icon
+          return (
+            <div
+              key={s.label}
+              className={cn(
+                'flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors',
+                activeStep
+                  ? 'border-primary/40 bg-primary/8'
+                  : done
+                    ? 'border-transparent'
+                    : 'border-transparent opacity-50',
+              )}
+            >
+              <span
+                className={cn(
+                  'grid size-8 shrink-0 place-items-center rounded-lg',
+                  done
+                    ? 'bg-primary/15 text-primary'
+                    : activeStep
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {done ? (
+                  <CheckCircle2 className="size-4" />
+                ) : activeStep ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Icon className="size-4" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{s.label}</p>
+                <p className="truncate text-xs text-muted-foreground">{s.desc}</p>
+              </div>
+              {done && (
+                <Badge variant="success" className="shrink-0 text-[10px]">
+                  完成
+                </Badge>
+              )}
+              {activeStep && (
+                <Badge variant="muted" className="shrink-0 text-[10px]">
+                  进行中
+                </Badge>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </Card>
   )
 }
 
