@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { GenerateGuardButton } from '@/components/generate-guard-button'
 import { cn } from '@/lib/utils'
 import {
   Sparkles,
@@ -193,12 +192,19 @@ export default function ImagePage() {
           </div>
         </Card>
 
-        <GenerateGuardButton
-          content={prompt}
-          label="生成图片（一次 4 张）"
-          generatingLabel="AI 正在生成 4 张预览…"
-          onProceed={generate}
-        />
+        <Button className="h-11 gap-2 text-sm" onClick={generate} disabled={status === 'loading'}>
+          {status === 'loading' ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              AI 正在生成 4 张预览…
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-4" />
+              生成图片（一次 4 张）
+            </>
+          )}
+        </Button>
         <p className="-mt-1 text-center text-[11px] text-muted-foreground">
           单张高清图生成 ≤ 30 秒 · 支持批量导入 CSV 最多 50 张
         </p>

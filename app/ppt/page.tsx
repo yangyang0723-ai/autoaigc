@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { GenerateGuardButton } from '@/components/generate-guard-button'
 import { cn } from '@/lib/utils'
 import {
   Sparkles,
@@ -109,11 +108,10 @@ export default function PptPage() {
           </div>
         </Card>
 
-        <GenerateGuardButton
-          content={`${scene} · ${slides[current].title}。${slides[current].sub}。星海 SUV 综合续航 700km，城市 NOA 组合辅助驾驶，0 首付 3 年免息政策。`}
-          label="AI 一键生成 PPT（≤ 2 分钟）"
-          generatingLabel="AI 正在生成 PPT…"
-        />
+        <Button className="h-11 gap-2">
+          <Sparkles className="size-4" />
+          AI 一键生成 PPT（≤ 2 分钟）
+        </Button>
       </div>
 
       {/* Main slide preview */}
