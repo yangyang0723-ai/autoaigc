@@ -9,6 +9,7 @@ import {
   FolderKanban,
   BarChart3,
   ShieldCheck,
+  ScrollText,
 } from 'lucide-react'
 
 export type NavItem = {
@@ -97,6 +98,17 @@ export const navGroups: NavGroup[] = [
         desc: '规则 / 敏感词 / 行业规范',
         icon: ShieldCheck,
         badge: '合规',
+      },
+    ],
+  },
+  {
+    title: '文档',
+    items: [
+      {
+        href: '/prd',
+        label: '产品需求文档',
+        desc: 'PRD · 需求与验收',
+        icon: ScrollText,
       },
     ],
   },
