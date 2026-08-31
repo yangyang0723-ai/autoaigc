@@ -243,11 +243,16 @@ const nonFunctional = [
 ]
 
 const metrics = [
-  { k: '内容生成总量', v: '各引擎累计产出条数', dir: '↑' },
-  { k: '素材采纳率', v: '被下载 / 发布的比例', dir: '↑' },
-  { k: '平均生成耗时', v: '单条内容生成时间', dir: '↓' },
-  { k: '活跃门店数', v: '使用平台的门店数量', dir: '↑' },
-  { k: '合规拦截率', v: '违规内容被校验拦截比例', dir: '稳定' },
+  { k: '本月生成素材', v: 'COUNT(DISTINCT task_id)，成功任务 / 本自然月', calc: '生成成功事件按 task_id 去重；与上月同期比较', dir: '↑' },
+  { k: '平均生成时长', v: 'AVG(finished_at - started_at)，成功任务，单位分钟', calc: '仅统计 status=success；耗时下降为正向', dir: '↓' },
+  { k: '审核通过率', v: '通过校验数 / 全部校验数 × 100%', calc: '来源 compliance_checked；分母为 0 显示 —', dir: '↑' },
+  { k: '素材复用率', v: '被下载或发布内容数 / 成功生成内容数 × 100%', calc: '按 content_id 去重；下载 / 发布任一成立即计复用', dir: '↑' },
+  { k: '活跃门店数', v: 'COUNT(DISTINCT store_id)', calc: '统计期内有成功生成、下载、发布或登录事件', dir: '↑' },
+  { k: '合规拦截率', v: 'blocked 校验数 / 全部校验数 × 100%', calc: '来源 compliance_checked；按时间范围聚合', dir: '稳定' },
+  { k: '近 7 天生成趋势', v: '按日、内容类型 COUNT(DISTINCT task_id)', calc: '最近 7 个自然日；无数据日补 0；周环比对比前 7 日', dir: '图表' },
+  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容数 × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
+  { k: '互动率', v: '(点赞 + 评论 + 分享) / 曝光 × 100%', calc: '热门内容按曝光降序取 TOP 5；曝光为 0 显示 —', dir: '图表' },
+  { k: '门店活跃度', v: '该店成功生成任务数 / TOP1 门店任务数 × 100%', calc: '门店榜按 COUNT(DISTINCT task_id) 降序', dir: '图表' },
 ]
 
 const roadmap = [
@@ -469,22 +474,24 @@ export default function PrdPage() {
             <Card className="overflow-hidden p-0">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="px-4 py-2.5 font-medium">指标</th>
-                    <th className="px-4 py-2.5 font-medium">定义</th>
-                    <th className="px-4 py-2.5 font-medium">目标</th>
-                  </tr>
+                      <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                        <th className="px-4 py-2.5 font-medium">指标 / 图表</th>
+                        <th className="px-4 py-2.5 font-medium">取值定义</th>
+                        <th className="px-4 py-2.5 font-medium">计算与聚合方式</th>
+                        <th className="px-4 py-2.5 font-medium">方向</th>
+                      </tr>
                 </thead>
                 <tbody>
                   {metrics.map((m) => (
                     <tr key={m.k} className="border-b border-border/60 last:border-0">
                       <td className="px-4 py-2.5 font-medium">{m.k}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{m.v}</td>
-                      <td className="px-4 py-2.5">
-                        <Badge variant="muted" className="tabular-nums">
-                          {m.dir}
-                        </Badge>
-                      </td>
+                        <td className="px-4 py-2.5 text-muted-foreground">{m.v}</td>
+                        <td className="px-4 py-2.5 text-xs text-muted-foreground">{m.calc}</td>
+                        <td className="px-4 py-2.5">
+                          <Badge variant="muted" className="tabular-nums">
+                            {m.dir}
+                          </Badge>
+                        </td>
                     </tr>
                   ))}
                 </tbody>

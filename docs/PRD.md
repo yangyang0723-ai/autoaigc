@@ -124,7 +124,7 @@
 - **FR-VID-005 直播回放上传与切片**：上传直播回放，自动解析并生成切片，带加载态与「已生成 N 条切片」反馈。
 - **FR-VID-006 主预览与播放控制**：主预览按所选尺寸渲染，支持播放 / 暂停切换。
 - **FR-VID-007 智能分镜时间轴**：以缩略图展示分镜，点击切换预览镜头。
-- **FR-VID-008 一键成片渲染过程**：触发后右侧分阶段渲染（解析脚本 → 生成分镜 → 数字人口播 → 配音字幕 → 卡点合成），完成后恢复预览。
+- **FR-VID-008 一键成片渲染过程**：触发后右侧分阶段渲染（解析脚本 → 生成分镜 → 数字人口播 → 配音字幕 → 卡点合成），完成后恢复预览���
 
 **验收标准**
 - 尺寸切换后主预览与渲染画布比例正确、居中约束宽度；分镜可切换；成片过程分阶段可视，完成后按钮变为「重新一键成片」。
@@ -243,22 +243,56 @@
 
 ---
 
-## 5. 数据指标（衡量成功）
+## 5. 数据指标与图表口径（衡量成功）
 
-| 指标 | 定义 | 目标方向 |
-| --- | --- | --- |
-| 内容生成总量 | 各引擎累计产出条数 | ↑ |
-| 素材采纳率 | 被下载 / 发布的比例 | ↑ |
-| 平均生成耗时 | 单条内容生成时间 | ↓ |
-| 活跃门店数 | 使用平台的门店数量 | ↑ |
-| 合规拦截率 | 违规内容被校验拦截比例 | 稳定可控 |
+### 5.1 统一数据口径
+- **统计时区**：Asia/Shanghai；自然日按 00:00:00–23:59:59 计算，时间范围按钮按当前时间向前回溯。
+- **统计对象**：正式提交并生成任务 ID 的任务；测试任务、失败任务不计入产出，重试任务按最终成功产出计 1 条。
+- **去重规则**：按 `task_id` 统计任务，发布 / 下载按 `content_id + action` 去重；门店按 `store_id` 去重。
+- **基础事件**：`generation_created`、`generation_succeeded`、`asset_downloaded`、`content_published`、`store_active`、`compliance_checked`、`compliance_blocked`。
+- **无数据处理**：分母为 0 时比例显示 `—`，耗时无成功任务时显示 `—`；前端展示值四舍五入，底层保留原始精度。
+
+### 5.2 工作台 KPI 指标
+| 指标 | 页面展示 | 取值来源 | 计算方式 | 对比口径 |
+| --- | --- | --- | --- | --- |
+| 本月生成素材 | `generation_succeeded` 成功任务数 | 生成任务表 / `generation_succeeded` | `COUNT(DISTINCT task_id)`，过滤本自然月且 status=`success` | 与上月同期比较，`(本期-上期)/上期×100%` |
+| 平均生成时长 | 分钟 | 生成任务的 `started_at`、`finished_at` | `AVG(finished_at - started_at)`，仅统计成功任务，单位分钟 | 与上月同期比较，耗时下降为正向 |
+| 审核通过率 | 百分比 | `compliance_checked` 及结果 | `COUNT(result='pass') / COUNT(all checked) × 100%` | 与上月同期比较，百分点变化 |
+| 素材复用率 | 百分比 | 素材下载 / 发布事件与生成内容 | `COUNT(DISTINCT content_id 有下载或发布) / COUNT(DISTINCT content_id 成功生成) × 100%` | 与上月同期比较，百分点变化 |
+
+### 5.3 工作台图表与任务队列
+| 图表 / 区块 | 取值字段 | 聚合与计算方式 | 展示规则 |
+| --- | --- | --- | --- |
+| 近 7 天生成趋势 | `generation_succeeded.created_at`、`content_type` | 按自然日 + 内容类型 `COUNT(DISTINCT task_id)`；每日各类型相加为总量 | X 轴为最近 7 个自然日，无数据日补 0；周环比=`本 7 日总量/前 7 日总量-1` |
+| 生成任务队列 | `task.status`、`progress`、`updated_at` | 按 `created_at DESC` 取当前用户最近任务；进度=`completed_steps/total_steps×100%` | `running` 显示进度，`queued` 显示 0%，`success` 显示 100%，`failed` 显示失败态 |
+| KPI 趋势箭头 | 当前周期值、上周期值 | 增长率=`(current-previous)/previous×100%`；耗时类反向判断 | 上升为绿色、下降为红色；耗时下降视为正向；上期为 0 显示 `—` |
+
+### 5.4 数据分析页图表口径
+| 图表 / 指标 | 取值与计算方式 |
+| --- | --- |
+| 内容生成总量 | `COUNT(DISTINCT task_id)`，按所选时间范围、成功任务统计 |
+| 素材采纳率 | `COUNT(DISTINCT content_id 有下载或发布) / COUNT(DISTINCT content_id 成功生成) × 100%` |
+| 平均生成耗时 | `AVG(finished_at-started_at)`，仅成功任务，秒数转换为分钟 |
+| 活跃门店数 | `COUNT(DISTINCT store_id)`，统计范围内至少有一次成功生成、下载、发布或登录事件 |
+| 合规拦截率 | `COUNT(result='blocked') / COUNT(all compliance_checked) × 100%` |
+| 生成量 vs 采纳量趋势 | 按日 `COUNT(generation_succeeded)` 与 `COUNT(DISTINCT content_id 有下载或发布)`；无数据日补 0 |
+| 渠道分发占比 | 各 `channel` 的发布内容数 / 全渠道发布内容数 × 100%；按发布内容去重 |
+| 各生成引擎使用量 | 按 `engine` 分组 `COUNT(DISTINCT task_id)`，仅统计成功任务 |
+| 人工 vs 平台耗时 | 人工记录的 `manual_minutes` 与平台生成的 `finished_at-started_at` 分别按内容类型 `AVG` |
+| 热门内容 TOP 5 | 按 `impressions DESC` 取前 5；互动率=`(likes+comments+shares)/impressions×100%` |
+| 门店活跃榜 | 按门店成功生成内容数 `COUNT(DISTINCT task_id)` 降序；活跃度进度=`该店数量/TOP1数量×100%` |
+
+### 5.5 埋点与数据质量要求
+- 所有生成引擎在创建、成功、失败、下载、发布、合规校验时写入事件；事件必须携带 `user_id`、`store_id`、`task_id`、`content_id`、`engine`、`created_at`。
+- 服务端负责计算指标，前端只负责展示；报表查询需携带 `range`、`timezone` 和组织权限过滤条件。
+- 每日离线校验：任务数与事件数对账、成功任务耗时非负、比例分母与明细总数一致；异常数据标记为 `data_quality_warning`。
 
 ---
 
 ## 6. 迭代规划
 
 - **v1.0（当前基线）**：五大生成引擎 + 素材资产 + 数据分析 + 合规知识库，全部支持点击反馈与生成过程可视化。
-- **v1.1（规划）**：素材详情的分享 / 重命名 / 删除落地真实逻辑；模板库独立页面。
+- **v1.1（规划）**：素材详情的分享 / 重命名 / ���除落地真实逻辑；模板库独立页面。
 - **v1.2（规划）**：视频变体 / 多平台 A/B（前期已下线，评估后重新引入）；批量生成与任务队列。
 - **v2.0（远期）**：多角色协作与审批流；私域获客数据回流与 ROI 归因。
 
