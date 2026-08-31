@@ -18,6 +18,7 @@ import {
   GitBranch,
   AlertTriangle,
   ServerCog,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -234,6 +235,14 @@ const modules: Module[] = [
   },
 ]
 
+const promptSpecs = [
+  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', vars: 'prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。' },
+  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', vars: 'topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正文字符数误差不超过 5%。' },
+  { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', vars: 'topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。' },
+  { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', vars: 'topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。' },
+  { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', vars: 'scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。' },
+]
+
 const nonFunctional = [
   { k: '性能', v: '生成过程分阶段可视化，单条内容目标分钟级；交互即时响应。' },
   { k: '可用性', v: '所有可点击元素具备点击反馈（按压 / 加载 / 成功态）。' },
@@ -251,7 +260,7 @@ const metrics = [
   { k: '活跃门店数', v: 'COUNT(DISTINCT store_id)', calc: '统计期内有成功生成、下载、发布或登录事件', dir: '↑' },
   { k: '合规拦截率', v: 'blocked 校验数 / 全部校验数 × 100%', calc: '来源 compliance_checked；按时间范围聚合', dir: '稳定' },
   { k: '近 7 天生成趋势', v: '按日、内容类型 COUNT(DISTINCT task_id)', calc: '最近 7 个自然日；无数据日补 0；周环比对比前 7 日', dir: '图表' },
-  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容数 × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
+  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容��� × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
   { k: '互动率', v: '(点赞 + 评论 + 分享) / 曝光 × 100%', calc: '热门内容按曝光降序取 TOP 5；曝光为 0 显示 —', dir: '图表' },
   { k: '门店活跃度', v: '该店成功生成任务数 / TOP1 门店任务数 × 100%', calc: '门店榜按 COUNT(DISTINCT task_id) 降序', dir: '图表' },
 ]
@@ -290,6 +299,7 @@ const toc = [
   { id: 'overview', label: '1. 文档概述', icon: ScrollText },
   { id: 'architecture', label: '2. 产品整体架构', icon: Layers },
   ...modules.map((m, i) => ({ id: m.id, label: `3.${i + 1} ${m.title}`, icon: m.icon })),
+  { id: 'prompt-specs', label: '3.10 提示词规范', icon: Sparkles },
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
   { id: 'metrics', label: '5. 数据指标', icon: Target },
   { id: 'implementation', label: '6. 研发实现规格', icon: ServerCog },
@@ -474,6 +484,44 @@ export default function PrdPage() {
               </Section>
             )
           })}
+
+          {/* 3.10 Prompt specifications */}
+          <Section id="prompt-specs" title="3.10 五大生成引擎提示词规范" icon={Sparkles}>
+            <Card className="mb-3 border-primary/25 bg-primary/[0.04] p-4">
+              <p className="text-sm font-medium">统一执行规范</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                服务端组合 system_prompt、user_prompt 与 output_schema；使用 {'{{variable}}'} 模板变量。结果必须通过 JSON Schema 与知识库合规校验，事实参数不得由模型编造，保存 prompt_template_version、模型版本与 requestId。
+              </p>
+            </Card>
+            <div className="space-y-3">
+              {promptSpecs.map((p) => (
+                <Card key={p.id} className="overflow-hidden p-0">
+                  <div className="flex flex-wrap items-center gap-2 border-b border-border bg-secondary/20 px-4 py-3">
+                    <Badge variant="muted">{p.id}</Badge>
+                    <p className="text-sm font-semibold">{p.name}</p>
+                    <span className="text-xs text-muted-foreground">角色：{p.role}</span>
+                  </div>
+                  <div className="grid gap-3 p-4 md:grid-cols-3">
+                    <div>
+                      <p className="text-xs font-semibold text-primary">输入变量</p>
+                      <code className="mt-1 block text-xs leading-relaxed text-muted-foreground">{p.vars}</code>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-primary">结构化输出</p>
+                      <code className="mt-1 block text-xs leading-relaxed text-muted-foreground">{p.output}</code>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-primary">业务约束</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.rules}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            <div className="mt-3 rounded-lg border border-border bg-secondary/20 p-4 text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中均返回明确错误码；同一版本下输出字段稳定。
+            </div>
+          </Section>
 
           {/* 4. Non-functional */}
           <Section id="non-functional" title="4. 非功能性需求">
