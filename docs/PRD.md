@@ -243,7 +243,7 @@
 ### 3.10.2 AI 图片生成 Prompt（`FR-IMG`）
 **系统角色**：你是汽车品牌视觉创意总监，负责生成真实、可商用的汽车营销视觉方案，优先保证车型外观一致、构图完整、品牌安全和指定画幅适配。
 
-**变量**：`{{prompt}}` 创���描述、`{{style}}` 视觉风格、`{{scene}}` 场景、`{{vehicle}}` 车型、`{{ratio}}` 图片比例、`{{count}}` 数量、`{{reference_image}}` 参考图（可选）。
+**变量**：`{{prompt}}` 创�����描述、`{{style}}` 视觉风格、`{{scene}}` 场景、`{{vehicle}}` 车型、`{{ratio}}` 图片比例、`{{count}}` 数量、`{{reference_image}}` 参考图（可选）。
 
 **用户 Prompt 模板**：请为“{{vehicle}}”生成{{count}}张{{ratio}}汽车营销图。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车型车身比例、灯组、轮毂、车标和颜色一致；画面适合{{ratio}}裁切，主体清晰，光影自然，无畸变、无乱码文字、无虚假品牌 Logo、无竞品 Logo、无水印。营销文字仅返回建议文案，不直接绘制进图像。
 
@@ -287,7 +287,22 @@
 
 **提示词验收**：每个引擎用固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型 JSON 解析失败和合规命中均有明确错误码；同一 `prompt_template_version` 下结果字段稳定。
 
-### 3.10.7 可直接复制的完整 Prompt
+### 3.10.7 汽车购车用户旅程注入规则
+五大引擎必须接收统一的 `journey_stage`，并根据用户所处购车阶段调整内容目标、信息密度和 CTA。阶段枚举固定为：`awareness` 认知种草、`consideration` 兴趣考虑、`comparison` 车型比较、`test_drive` 试驾体验、`purchase` 购买决策、`delivery` 交付分享、`retention` 车主运营。
+
+| 用户旅程阶段 | 用户问题 | 内容策略 | 推荐 CTA | 禁止事项 |
+| --- | --- | --- | --- | --- |
+| 认知种草 | 这是什么车，为什么值得关注？ | 讲清场景痛点、核心卖点和品牌差异，降低理解门槛 | 了解车型 / 收藏 | 夸大领先、贬低竞品、制造焦虑 |
+| 兴趣考虑 | 适合我和我的家庭吗？ | 围绕家庭人数、通勤、空间、智能、安全、能源类型解释适配性 | 查看配置 / 获取资料 | 无依据地判断用户需求 |
+| 车型比较 | 和其他车型怎么选？ | 只比较输入中有来源的维度，展示口径、时间和数据来源 | 预约顾问对比 | 片面截取、虚构排名、绝对化结论 |
+| 试驾体验 | 开起来和用起来怎么样？ | 展示真实试驾路线、功能操作和体验步骤，突出可验证证据 | 预约试驾 | 模拟用户评价、虚构体验数据 |
+| 购买决策 | 现在买需要哪些信息？ | 清晰展示官方价格、金融、权益、库存和门店信息，缺失则标记待确认 | 咨询报价 / 预约到店 | 虚构限时、库存、优惠或保价承诺 |
+| 交付分享 | 提车后如何分享？ | 输出交付节点、用车场景和真实车主内容模板 | 分享交车 / 联系门店 | 未授权使用车主身份、照片或联系方式 |
+| 车主运营 | 如何持续服务车主？ | 围绕保养、活动、权益和复购建立低打扰沟通 | 预约保养 / 查看权益 | 过度营销、诱导或泄露车主信息 |
+
+服务端将 `journey_stage`、`persona`、`channel`、`conversion_goal` 和 `brand_facts` 注入每套 Prompt；若阶段与内容类型不匹配，优先返回校验提示而不是自行猜测。五大引擎的输出需记录阶段字段，便于按旅程分析生成、采纳、线索和成交转化。
+
+### 3.10.8 可直接复制的完整 Prompt
 以下内容由服务端按顺序拼接：`system_prompt` 固定不被用户覆盖；`user_prompt` 注入业务变量；`output_schema` 作为结构化输出约束。研发只需替换 `{{变量}}`，不要删除规则和 JSON 字段。
 
 #### Prompt A：AI 图片生成
@@ -366,7 +381,7 @@
 请生成 {{pages}} 页：封面、背景/目标、核心洞察、数据证据、方案/行动、总结，并根据页数合理合并章节。每页只保留一个结论和 3–5 条要点；需要图表时选择 bar、line 或 pie，并生成可直接演讲的备注。生成后检查页数、逻辑顺序、数据来源和重复内容。
 
 [output]
-只返回 JSON：{"title":"string","template":"string","slides":[{"index":1,"title":"string","conclusion":"string","bullets":["string"],"chart":{"type":"bar|line|pie|none","data":[],"unit":"string","period":"string","source":"string"},"notes":"string"}]}。slides 数量必须等于 {{pages}}。
+只返回 JSON：{"title":"string","template":"string","slides":[{"index":1,"title":"string","conclusion":"string","bullets":["string"],"chart":{"type":"bar|line|pie|none","data":[],"unit":"string","period":"string","source":"string"},"notes":"string"}]}。slides 数���必须等于 {{pages}}。
 ```
 
 #### Prompt E：朋友圈图文
@@ -435,7 +450,7 @@
 | 活跃门店数 | `COUNT(DISTINCT store_id)`，统计范围内至少有一次成功生成、下载、发布或登录事件 |
 | 合规拦截率 | `COUNT(result='blocked') / COUNT(all compliance_checked) × 100%` |
 | 生成量 vs 采纳量趋势 | 按日 `COUNT(generation_succeeded)` 与 `COUNT(DISTINCT content_id 有下载或发布)`；无数据日补 0 |
-| 渠道分发占比 | 各 `channel` 的发布内容数 / 全渠道发布内容数 × 100%；按发布内容去重 |
+| 渠道分发占比 | 各 `channel` 的发布内容数 / 全渠道发布内容数 × 100%；按发布内���去重 |
 | 各生成引擎使用量 | 按 `engine` 分组 `COUNT(DISTINCT task_id)`，仅统计成功任务 |
 | 人工 vs 平台耗时 | 人工记录的 `manual_minutes` 与平台生成的 `finished_at-started_at` 分别按内容类型 `AVG` |
 | 热门内容 TOP 5 | 按 `impressions DESC` 取前 5；互动率=`(likes+comments+shares)/impressions×100%` |
