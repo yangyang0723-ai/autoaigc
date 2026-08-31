@@ -149,7 +149,7 @@ const modules: Module[] = [
       { id: 'FR-PPT-002', title: '模板选择', desc: '选择行业视觉模板（Chip 单选）。' },
       { id: 'FR-PPT-003', title: '大纲编排', desc: '生成分页大纲结构。' },
       { id: 'FR-PPT-004', title: '幻灯片预览与翻页', desc: '主预览按页展示，支持缩略图翻页切换。' },
-      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲�����注。' },
+      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲�������注。' },
       { id: 'FR-PPT-006', title: '数据可视化图表', desc: '销量趋势 / 市场份额 / 客户画像 / 漏斗转化，点击推荐并插入当前页。' },
       { id: 'FR-PPT-007', title: '演示模式', desc: '进入 / 退出演示态，画布显示「演示中」标记。' },
       { id: 'FR-PPT-008', title: '导出', desc: '导出 PPTX / PDF，带加载态与「已导出」反馈。' },
@@ -236,11 +236,11 @@ const modules: Module[] = [
 ]
 
 const promptSpecs = [
-  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、虚假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
-  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正文字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
-  { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
-  { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
-  { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', journey: '购买决策 / 交付分享 / 车主运营：以门店和顾问的可信关系推动咨询、到店、交付分享和售后复购。', vars: 'journey_stage、scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。', prompt: '你是一线汽车销售顾问的朋友圈内容助手。请为{{journey_stage}}阶段生成{{persona}}口吻的{{scene}}图文，车型{{vehicle}}，活动事实{{offer}}，门店信息{{store_info}}，配图{{image_size}}。正文80–180字，低打扰并包含咨询 CTA；只返回包含 copy、images[]、hashtags[]、watermark[]、compliance 的 JSON。' },
+  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、虚假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
+  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正文字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
+  { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、viral_keywords、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
+  { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、viral_keywords、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
+  { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', journey: '购买决策 / 交付分享 / 车主运营：以门店和顾问的可信关系推动咨询、到店、交付分享和售后复购。', vars: 'journey_stage、viral_keywords、scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。', prompt: '你是一线汽车销售顾问的朋友圈内容助手。请为{{journey_stage}}阶段生成{{persona}}口吻的{{scene}}图文，车型{{vehicle}}，活动事实{{offer}}，门店信息{{store_info}}，配图{{image_size}}。正文80–180字，低打扰并包含咨询 CTA；只返回包含 copy、images[]、hashtags[]、watermark[]、compliance 的 JSON。' },
 ]
 
 const nonFunctional = [
@@ -297,7 +297,7 @@ const risks = [
 
 const toc = [
   { id: 'overview', label: '1. 文档概述', icon: ScrollText },
-  { id: 'architecture', label: '2. 产品整体架构', icon: Layers },
+  { id: 'architecture', label: '2. 产品���体架构', icon: Layers },
   ...modules.map((m, i) => ({ id: m.id, label: `3.${i + 1} ${m.title}`, icon: m.icon })),
   { id: 'prompt-specs', label: '3.10 提示词规范', icon: Sparkles },
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
@@ -493,6 +493,12 @@ export default function PrdPage() {
                 服务端组合 system_prompt、user_prompt 与 output_schema；使用 {'{{variable}}'} 模板变量。结果必须通过 JSON Schema 与知识库合规校验，事实参数不得由模型编造，保存 prompt_template_version、模型版本与 requestId。
               </p>
             </Card>
+            <Card className="mb-3 border-amber-500/25 bg-amber-500/[0.04] p-4">
+              <p className="text-sm font-medium">爆款关键词注入规则</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                每次注入 1–2 个核心词、2–4 个场景/痛点词、1–2 个证据词和 1 个转化词；核心词放标题、首屏或前三秒，证据词必须绑定知识库事实。同一核心词默认不超过 3 次，关键词覆盖率不超过正文 3%；交易词须有官方有效期和适用条件，绝对化词一律拦截。
+              </p>
+            </Card>
             <div className="space-y-3">
               {promptSpecs.map((p) => (
                 <Card key={p.id} className="overflow-hidden p-0">
@@ -505,6 +511,7 @@ export default function PrdPage() {
                     <div className="md:col-span-3 rounded-lg border border-primary/20 bg-primary/[0.04] p-3">
                       <p className="text-xs font-semibold text-primary">购车旅程应用</p>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.journey}</p>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground"><span className="font-medium text-foreground">关键词位置：</span>核心词进标题/首屏，场景与痛点词进正文，证据词绑定车型事实，转化词仅用于 CTA。</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-primary">输入变量</p>
