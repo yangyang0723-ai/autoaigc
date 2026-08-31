@@ -289,7 +289,69 @@
 
 ---
 
-## 6. 迭代规划
+## 6. 研发实现规格
+
+### 6.1 交付范围与当前原型边界
+- 当前原型中的生成、上传、下载、分享、重命名、删除、通知、全局搜索和数据分析均为演示交互；研发实现时不得把 mock 延迟或静态数组视为后端能力。
+- v1.0 必须交付：五大生成入口、统一任务状态、结果资产落库、素材检索/详情/下载、合规校验、基础分析查询和权限过滤。
+- 本期不交付：视频变体/A-B、多角色审批流、真实微信自动发布、第三方平台自动发布；相关按钮应隐藏或明确标记为规划能力，不得产生假成功状态。
+
+### 6.2 生成任务状态机
+| 状态 | 进入条件 | 可转移状态 | 前端展示 | 失败处理 |
+| --- | --- | --- | --- | --- |
+| `draft` | 用户打开引擎 | `queued` | 可编辑参数 | 不产生任务 |
+| `queued` | 参数校验通过并提交 | `running` / `canceled` | 排队中，进度 0% | 超时可取消 |
+| `running` | Worker 已领取任务 | `succeeded` / `failed` / `canceled` | 阶段名 + 进度 | 自动重试最多 2 次，指数退避 |
+| `succeeded` | 全部产物生成并落库 | `exported` | 结果可预览/下载 | 产物缺失视为失败 |
+| `failed` | 模型、存储或合规失败 | `queued` / `canceled` | 错误码 + 重试 | 用户可手动重试，保留原 task_id 关联 |
+| `canceled` | 用户主动取消 | 终态 | 已取消 | Worker 必须停止后续扣费/落库 |
+| `exported` | 文件导出成功 | 终态 | 已导出 | 导出失败可重新导出 |
+
+进度统一为 `completed_steps / total_steps × 100%`，服务端阶段完成后写入，前端通过 SSE 或轮询（2 秒间隔，最多 5 分钟）更新；页面刷新后通过 `task_id` 恢复状态。
+
+### 6.3 API 契约
+| 接口 | 方法 | 请求关键字段 | 成功响应 | 错误 |
+| --- | --- | --- | --- | --- |
+| `/api/generations` | POST | `engine`、`input`、`idempotencyKey` | `{ taskId, status: 'queued' }` | `400 INVALID_INPUT`、`409 DUPLICATE_REQUEST`、`429 RATE_LIMITED` |
+| `/api/generations/:taskId` | GET | 路径参数 | `{ taskId, status, progress, stage, outputs, error }` | `404 NOT_FOUND`、`403 FORBIDDEN` |
+| `/api/generations/:taskId/cancel` | POST | 无 | `{ taskId, status: 'canceled' }` | `409 INVALID_STATE` |
+| `/api/assets` | GET | `q`、`type`、`folderId`、`page`、`pageSize` | `{ items, total, page, pageSize }` | `400 INVALID_QUERY` |
+| `/api/assets/:id` | GET/PATCH/DELETE | 标题、标签、收藏状态 | 资产详情 / 更新结果 | `403`、`404`、`409` |
+| `/api/assets/:id/download` | POST | `format`、`ratio` | `{ downloadUrl, expiresAt }` | `409 EXPORT_NOT_READY` |
+| `/api/assets/upload` | POST | multipart `file`、`folderId` | `{ assetId, status }` | `413 FILE_TOO_LARGE`、`415 UNSUPPORTED_TYPE` |
+| `/api/analytics` | GET | `range`、`timezone`、筛选项 | `{ kpis, series, channels, engines, rankings }` | `400 INVALID_RANGE` |
+| `/api/knowledge/validate` | POST | `{ content }` | 现有校验响应结构 | `400 EMPTY_CONTENT`、`503 KB_UNAVAILABLE` |
+
+所有写接口必须携带登录会话与幂等键；服务端不得信任前端的 `user_id`、`store_id` 和权限字段。
+
+### 6.4 数据模型与约束
+- `users(id, organization_id, role, status)`；角色至少包含 `brand_admin`、`market_manager`、`operator`、`sales`、`compliance`。
+- `generation_tasks(id, organization_id, user_id, store_id, engine, input_json, status, progress, stage, error_code, created_at, started_at, finished_at)`；`idempotency_key` 在用户维度唯一。
+- `generation_outputs(id, task_id, content_id, asset_id, output_type, url, width, height, duration_sec, metadata_json)`；任务成功必须至少有一个有效 output。
+- `assets(id, organization_id, owner_id, folder_id, title, type, size_bytes, mime_type, storage_key, tags_json, starred, created_at, updated_at)`；组织隔离，软删除，下载 URL 5 分钟过期。
+- `compliance_checks(id, task_id, content_id, kb_version, score, passed, findings_json, created_at)`；校验结果与内容版本绑定，不覆盖历史结果。
+- `analytics_events(id, organization_id, store_id, user_id, task_id, content_id, event_name, channel, payload_json, occurred_at)`；事件不可更新，只允许追加。
+
+### 6.5 权限、配额与安全
+- 默认按 `organization_id` 隔离数据；品牌管理员可查看组织数据，门店用户只能查看所属门店及本人任务，合规角色可读内容与校验结果但默认不可删除资产。
+- 生成配额按组织/用户/引擎配置；超额返回 `429 RATE_LIMITED`，前端展示剩余配额和重置时间。
+- 上传白名单：PNG/JPEG/WebP/MP4/PDF/PPTX；文件大小、像素、时长、页数均由服务端校验；对象存储使用私有桶和短期签名 URL。
+- Prompt、文案和上传文件按敏感数据处理；日志禁止记录完整内容、签名 URL 和访问令牌；导出和删除写入审计日志。
+
+### 6.6 错误、重试与可观测性
+- 统一错误响应：`{ code, message, requestId, retryable }`；前端只根据 `code` 决策，不解析 message。
+- 可重试错误：模型 5xx、网络超时、存储临时不可用；不可重试错误：参数错误、权限错误、合规拦截、文件格式错误。
+- 记录任务成功率、P50/P95 生成时长、队列等待时长、模型错误率、合规拦截率、下载成功率；按 `requestId/taskId` 串联日志。
+- 告警阈值：连续 5 分钟生成失败率 > 5%、P95 超过目标 2 倍、合规服务不可用超过 1 分钟；告警不得泄露用户内容。
+
+### 6.7 研发验收清单
+- 断网、刷新、重复点击、重复提交、浏览器返回后，任务状态和结果不丢失、不重复扣配额。
+- 所有按钮区分 loading、success、error、disabled；未实现能力不显示假成功反馈。
+- 任意接口无法通过修改请求体访问其他组织或门店数据；资产下载链接过期后必须重新鉴权。
+- 统计结果可用明细事件复算；空数据按“—”处理；所有时间按 Asia/Shanghai 展示并以 UTC 存储。
+- 关键流程覆盖单元测试、接口测试、权限测试、任务重试测试、上传安全测试和主路径 E2E 测试。
+
+## 7. 迭代规划
 
 - **v1.0（当前基线）**：五大生成引擎 + 素材资产 + 数据分析 + 合规知识库，全部支持点击反馈与生成过程可视化。
 - **v1.1（规划）**：素材详情的分享 / 重命名 / ���除落地真实逻辑；模板库独立页面。
@@ -298,7 +360,7 @@
 
 ---
 
-## 7. 风险与依赖
+## 8. 风险与依赖
 
 | 风险 / 依赖 | 说明 | 应对 |
 | --- | --- | --- |

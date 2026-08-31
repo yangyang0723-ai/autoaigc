@@ -17,6 +17,7 @@ import {
   Target,
   GitBranch,
   AlertTriangle,
+  ServerCog,
   type LucideIcon,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -255,6 +256,22 @@ const metrics = [
   { k: '门店活跃度', v: '该店成功生成任务数 / TOP1 门店任务数 × 100%', calc: '门店榜按 COUNT(DISTINCT task_id) 降序', dir: '图表' },
 ]
 
+const implementationCards = [
+  { title: '任务状态机', body: 'draft → queued → running → succeeded / failed / canceled；进度 = completed_steps / total_steps × 100%，刷新后通过 task_id 恢复。' },
+  { title: '接口与幂等', body: '统一使用 /api/generations、/api/assets、/api/analytics、/api/knowledge/validate；写接口必须携带会话与 idempotencyKey。' },
+  { title: '数据与权限', body: 'generation_tasks、generation_outputs、assets、compliance_checks、analytics_events 五类核心数据；按 organization_id 隔离。' },
+  { title: '错误与重试', body: '统一返回 code、message、requestId、retryable；模型 5xx / 超时最多指数退避重试 2 次，参数、权限、合规错误不可重试。' },
+  { title: '安全与验收', body: '上传白名单与大小校验由服务端执行，使用私有对象存储短期签名 URL；必须覆盖权限、重试、上传安全和主路径 E2E。' },
+]
+
+const implementationRows = [
+  ['生成提交', 'POST /api/generations', 'engine、input、idempotencyKey', 'taskId + queued；重复幂等键返回同一任务'],
+  ['任务查询', 'GET /api/generations/:taskId', 'taskId', 'status、progress、stage、outputs、error'],
+  ['资产下载', 'POST /api/assets/:id/download', 'format、ratio', '5 分钟过期 downloadUrl；需重新鉴权'],
+  ['数据分析', 'GET /api/analytics', 'range、timezone、筛选项', 'KPI、趋势、渠道、引擎、榜单'],
+  ['合规校验', 'POST /api/knowledge/validate', 'content', 'score、passed、counts、findings'],
+]
+
 const roadmap = [
   { v: 'v1.0（当前基线）', d: '五大生成引擎 + 素材资产 + 数据分析 + 合规知识库，全部支持点击反馈与生成过程可视化。' },
   { v: 'v1.1（规划）', d: '素材详情的分享 / 重命名 / 删除落地真实逻辑；模板库独立页面。' },
@@ -275,8 +292,9 @@ const toc = [
   ...modules.map((m, i) => ({ id: m.id, label: `3.${i + 1} ${m.title}`, icon: m.icon })),
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
   { id: 'metrics', label: '5. 数据指标', icon: Target },
-  { id: 'roadmap', label: '6. 迭代规划', icon: GitBranch },
-  { id: 'risks', label: '7. 风险与依赖', icon: AlertTriangle },
+  { id: 'implementation', label: '6. 研发实现规格', icon: ServerCog },
+  { id: 'roadmap', label: '7. 迭代规划', icon: GitBranch },
+  { id: 'risks', label: '8. 风险与依赖', icon: AlertTriangle },
 ]
 
 function useActiveSection(ids: string[]) {
@@ -499,8 +517,48 @@ export default function PrdPage() {
             </Card>
           </Section>
 
-          {/* 6. Roadmap */}
-          <Section id="roadmap" title="6. 迭代规划">
+          {/* 6. Implementation */}
+          <Section id="implementation" title="6. 研发实现规格" icon={ServerCog}>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {implementationCards.map((item) => (
+                <Card key={item.title} className="p-4">
+                  <p className="text-sm font-medium">{item.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.body}</p>
+                </Card>
+              ))}
+            </div>
+            <Card className="mt-3 overflow-hidden p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                      <th className="px-4 py-2.5 font-medium">能力</th>
+                      <th className="px-4 py-2.5 font-medium">接口</th>
+                      <th className="px-4 py-2.5 font-medium">请求关键字段</th>
+                      <th className="px-4 py-2.5 font-medium">成功响应 / 约束</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {implementationRows.map((row) => (
+                      <tr key={row[0]} className="border-b border-border/60 last:border-0">
+                        {row.map((cell, index) => (
+                          <td key={index} className={cn('px-4 py-2.5 text-xs', index === 0 ? 'font-medium' : 'text-muted-foreground')}>
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+            <div className="mt-3 rounded-lg border border-primary/25 bg-primary/[0.06] p-4 text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-primary">研发验收：</span>断网、刷新、重复提交、浏览器返回后任务状态不丢失；服务端执行组织隔离、配额、文件白名单与权限校验；所有关键流程覆盖单元、接口、权限、重试、上传安全和 E2E 测试。
+            </div>
+          </Section>
+
+          {/* 7. Roadmap */}
+          <Section id="roadmap" title="7. 迭代规划">
             <div className="space-y-3">
               {roadmap.map((r, i) => (
                 <Card key={r.v} className="flex items-start gap-3 p-4">
