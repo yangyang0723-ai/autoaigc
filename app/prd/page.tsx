@@ -149,7 +149,7 @@ const modules: Module[] = [
       { id: 'FR-PPT-002', title: '模板选择', desc: '选择行业视觉模板（Chip 单选）。' },
       { id: 'FR-PPT-003', title: '大纲编排', desc: '生成分页大纲结构。' },
       { id: 'FR-PPT-004', title: '幻灯片预览与翻页', desc: '主预览按页展示，支持缩略图翻页切换。' },
-      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲备注。' },
+      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲���注。' },
       { id: 'FR-PPT-006', title: '数据可视化图表', desc: '销量趋势 / 市场份额 / 客户画像 / 漏斗转化，点击推荐并插入当前页。' },
       { id: 'FR-PPT-007', title: '演示模式', desc: '进入 / 退出演示态，画布显示「演示中」标记。' },
       { id: 'FR-PPT-008', title: '导出', desc: '导出 PPTX / PDF，带加载态与「已导出」反馈。' },
@@ -244,7 +244,7 @@ const promptSpecs = [
 ]
 
 const nonFunctional = [
-  { k: '性能', v: '生成过程分阶段可视化，单条内容目标分钟级；交互即时响应。' },
+  { k: '性能', v: '生成过程分阶段可视化��单条内容目标分钟级；交互即时响应。' },
   { k: '可用性', v: '所有可点击元素具备点击反馈（按压 / 加载 / 成功态）。' },
   { k: '可访问性', v: '语义化 HTML、ARIA 标注、键盘可达（卡片 Enter/Space、弹层 Esc）。' },
   { k: '响应式', v: '采用设计系统断点与布局原语，移动端到宽屏自适应。' },
@@ -515,11 +515,15 @@ export default function PrdPage() {
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.rules}</p>
                     </div>
                   </div>
+                  <div className="border-t border-border bg-muted/30 p-4">
+                    <p className="text-xs font-semibold text-primary">可直接复制的 Prompt 骨架</p>
+                    <pre className="mt-2 whitespace-pre-wrap break-words rounded-lg border border-border bg-background p-3 text-[11px] leading-relaxed text-muted-foreground">{`你是${p.role}。请基于以下输入完成${p.name}：\n输入变量：${p.vars}\n执行要求：严格遵守业务事实，不得编造；输出前执行合规校验；缺少必填信息返回 INVALID_INPUT。\n业务约束：${p.rules}\n只返回 JSON，字段必须为：${p.output}。不要输出 Markdown、解释文字或额外字段。`}</pre>
+                  </div>
                 </Card>
               ))}
             </div>
             <div className="mt-3 rounded-lg border border-border bg-secondary/20 p-4 text-xs leading-relaxed text-muted-foreground">
-              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中均返回明确错误码；同一版本下输出字段稳定。
+              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中���返回明确错误码；同一版本下输出字段稳定。
             </div>
           </Section>
 
