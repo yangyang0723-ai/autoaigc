@@ -20,7 +20,6 @@ import {
   CheckCircle2,
   PenLine,
   ImageIcon,
-  GripVertical,
 } from 'lucide-react'
 
 const contentTypes = ['公众号推文', '小红书种草', '知乎回答', '商品详情页', '微博文案']
@@ -35,14 +34,6 @@ const imageSizes = [
   { label: '竖图 3:4', ratio: 'aspect-[3/4]' },
 ]
 
-const outline = [
-  { h: '一、开篇：为什么这台旗舰 SUV 值得等待', img: false },
-  { h: '二、外观设计：科技美学的极致表达', img: true },
-  { h: '三、智能座舱：越级的数字化体验', img: true },
-  { h: '四、动力与续航：实测数据说话', img: false },
-  { h: '五、金融政策：0 首付 3 年免息购车方案', img: false },
-  { h: '六、总结：谁适合入手这台车', img: false },
-]
 
 const topics = [
   { t: '2026 新能源 SUV 选购指南', hot: '热度 98' },
@@ -81,9 +72,6 @@ export default function TextPage() {
   const [imageSize, setImageSize] = useState(imageSizes[0])
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
   const [step, setStep] = useState(0)
-  const [items, setItems] = useState(outline)
-  const [dragIndex, setDragIndex] = useState<number | null>(null)
-  const [overIndex, setOverIndex] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
   const [converting, setConverting] = useState(false)
   const [convertedTo, setConvertedTo] = useState<string | null>(null)
@@ -134,22 +122,6 @@ export default function TextPage() {
         setTimeout(() => setStatus('done'), 600)
       }
     }, 760)
-  }
-
-  function handleDrop(target: number) {
-    if (dragIndex === null || dragIndex === target) {
-      setDragIndex(null)
-      setOverIndex(null)
-      return
-    }
-    setItems((prev) => {
-      const next = [...prev]
-      const [moved] = next.splice(dragIndex, 1)
-      next.splice(target, 0, moved)
-      return next
-    })
-    setDragIndex(null)
-    setOverIndex(null)
   }
 
   return (
@@ -238,57 +210,6 @@ export default function TextPage() {
           <GenerationProcess step={step} />
         ) : (
         <>
-        {/* Outline */}
-        <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <ListTree className="size-4 text-primary" />
-            AI 生成大纲
-            <Badge variant="muted" className="ml-auto gap-1">
-              <GripVertical className="size-3" />
-              拖拽调整顺序
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            {items.map((o, i) => {
-              const isDragging = dragIndex === i
-              const isOver = overIndex === i && dragIndex !== null && dragIndex !== i
-              return (
-                <div
-                  key={o.h}
-                  draggable
-                  onDragStart={(e) => {
-                    setDragIndex(i)
-                    e.dataTransfer.effectAllowed = 'move'
-                  }}
-                  onDragEnter={() => setOverIndex(i)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => handleDrop(i)}
-                  onDragEnd={() => {
-                    setDragIndex(null)
-                    setOverIndex(null)
-                  }}
-                  className={cn(
-                    'flex cursor-grab items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm transition-all duration-200 active:cursor-grabbing',
-                    isDragging
-                      ? 'scale-[0.98] border-primary/60 opacity-50 shadow-lg ring-1 ring-primary/40'
-                      : 'border-border hover:border-primary/40 hover:bg-secondary/40',
-                    isOver && 'border-primary border-dashed bg-primary/8 ring-1 ring-primary/30',
-                  )}
-                >
-                  <GripVertical className="size-4 shrink-0 text-muted-foreground/60" />
-                  <span className="w-6 text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="flex-1">{o.h}</span>
-                  {o.img && (
-                    <Badge variant="accent" className="text-[10px]">
-                      建议配图
-                    </Badge>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </Card>
-
         {/* Article preview + SEO */}
         <div className="grid gap-4 xl:grid-cols-[1fr_280px]">
           <Card className="overflow-hidden p-0">
