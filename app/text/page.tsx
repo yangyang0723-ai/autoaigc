@@ -73,7 +73,6 @@ export default function TextPage() {
   const [copied, setCopied] = useState(false)
   const [converting, setConverting] = useState(false)
   const [convertedTo, setConvertedTo] = useState<string | null>(null)
-  const [copiedKeyword, setCopiedKeyword] = useState<string | null>(null)
 
   const articleText = `实测 2026 款星海 SUV：这台旗舰把智能座舱卷到了新高度
 
@@ -95,13 +94,6 @@ export default function TextPage() {
     copyText(articleText, () => {
       setCopied(true)
       setTimeout(() => setCopied(false), 1800)
-    })
-  }
-
-  function handleCopyKeyword(k: string) {
-    copyText(k, () => {
-      setCopiedKeyword(k)
-      setTimeout(() => setCopiedKeyword((cur) => (cur === k ? null : cur)), 1500)
     })
   }
 
@@ -289,7 +281,7 @@ export default function TextPage() {
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <FileText className="size-4 text-primary" />
-                图文混排预览
+                图文预览
               </div>
               <Button
                 variant="outline"
@@ -341,39 +333,6 @@ export default function TextPage() {
           </Card>
 
           <div className="flex flex-col gap-4">
-            <Card className="p-5">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Gauge className="size-4 text-primary" />
-                SEO 优化（FR-TXT-005）
-              </div>
-              <div className="space-y-3">
-                <SeoBar label="关键词密度" value={72} />
-                <SeoBar label="标题吸引力" value={88} />
-                <SeoBar label="可读性评分" value={81} />
-              </div>
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold">长尾关键词建议</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {['星海SUV怎么样', '25万新能源SUV', '智能座舱对比', '0首付购车'].map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => handleCopyKeyword(k)}
-                      className={cn(
-                        'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors active:scale-95',
-                        copiedKeyword === k
-                          ? 'border-primary/50 bg-primary/15 text-primary'
-                          : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                      )}
-                    >
-                      {copiedKeyword === k && <CheckCircle2 className="size-3" />}
-                      {copiedKeyword === k ? '已复制' : k}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
             <Card className="p-5">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <Layers className="size-4 text-primary" />
@@ -552,16 +511,3 @@ function GenerationProcess({ step }: { step: number }) {
   )
 }
 
-function SeoBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">{value}</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
-      </div>
-    </div>
-  )
-}
