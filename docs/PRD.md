@@ -240,7 +240,7 @@
 - 模板变量使用 `{{variable}}`；缺失必填变量返回 `INVALID_INPUT`，不得生成猜测内容。枚举值必须来自引擎字段配置。
 - 所有生成结果先执行知识库合规校验；命中高风险规则返回 `COMPLIANCE_BLOCKED`，不写入可发布资产。
 - 模型输出按 JSON Schema 解析；解析失败自动重试 1 次，仍失败返回 `MODEL_OUTPUT_INVALID`，并记录 `requestId`。
-- 车型、价格、续航、优惠、金融政策等事实只允许来自业务参数，不得编造；缺少事实时要求补充或标记“以官方信息为准”。
+- 车型、价格、续航、优惠、金融政策等事实只允许来自业���参数，不得编造；缺少事实时要求补充或标记“以官方信息为准”。
 - 保存 `prompt_template_version`、模型版本和输出校验结果，便于复现与审计；不得记录完整敏感原文、密钥或签名 URL。
 
 ### 3.10.2 AI 图片生成 Prompt（`FR-IMG`）
@@ -563,10 +563,149 @@ SEO 优化服务在生成完成后执行，输入为标题、正文、平台、�
 
 ### 6.7 研发验收清单
 - 断网、刷新、重复点击、重复提交、浏览器返回后，任务状态和结果不丢失、不重复扣配额。
-- 所有按钮区分 loading、success、error、disabled；未实现能力不显示假成功反馈。
+- 所有按钮区分 loading、success、error、disabled；未实现能力不显示假成功反馈；
 - 任意接口无法通过修改请求体访问其他组织或门店数据；资产下载链接过期后必须重新鉴权。
 - 统计结果可用明细事件复算；空数据按“—”处理；所有时间按 Asia/Shanghai 展示并以 UTC 存储。
 - 关键流程覆盖单元测试、接口测试、权限测试、任务重试测试、上传安全测试和主路径 E2E 测试。
+
+### 6.8 服务端模块划分（可直接落地的目录结构）
+```text
+/app/api/generations/route.ts              # POST 创建任务：校验入参 → 写 generation_tasks(queued) → 入队
+/app/api/generations/[taskId]/route.ts      # GET 任务状态；SSE 推送 progress/stage
+/app/api/generations/[taskId]/cancel/route.ts
+/lib/engines/
+  ├─ image.engine.ts     # buildPrompt / callModel / validateOutput / postProcess
+  ├─ text.engine.ts      # 含 seo.ts（SEO 规则引擎）、keywords.ts（爆款关键词选取）
+  ├─ video.engine.ts     # storyboard 时长核验、字幕对齐
+  ├─ ppt.engine.ts       # 大纲编排、图表数据校验
+  └─ moments.engine.ts   # 水印/二维码匹配、合规润色
+/lib/pipeline/
+  ├─ validateInput.ts     # 枚举/必填校验 → INVALID_INPUT
+  ├─ injectContext.ts     # 注入 journey_stage、persona、brand_facts、viral_keywords
+  ├─ assemblePrompt.ts    # system_prompt + user_prompt + output_schema 拼接
+  ├─ invokeModel.ts       # 模型调用 + 指数退避重试（最多 2 次）
+  ├─ parseOutput.ts       # JSON Schema 解析，失败重试 1 次 → MODEL_OUTPUT_INVALID
+  ├─ complianceGate.ts    # 调用 /api/knowledge/validate → COMPLIANCE_BLOCKED 分支
+  └─ persistOutput.ts     # 写 generation_outputs / assets，任务置为 succeeded
+/lib/skills/*.ts          # 现有的引擎字段配置（枚举、默认值），前端与服务端共享同一份定义
+```
+每个引擎的 `*.engine.ts` 只实现 `buildPrompt`（组装 3.10 节模板变量）、`postProcess`（引擎专属校验，如图文 SEO 评分、视频分镜时长核对）；其余步骤全部复用 `/lib/pipeline` 中的通用函数，保证五大引擎状态机、错误码和合规校验完全一致。
+
+### 6.9 五大生成引擎实现逻辑流程图
+统一底层流水线相同（对应 6.2 状态机 + 6.8 模块划分），差异仅在“引擎专属处理”节点。每张图的失败分支均需返回 6.6 定义的标准错误码，任务最终态写回 `generation_tasks`。
+
+#### 6.9.1 通用流水线（五大引擎共用）
+```mermaid
+flowchart TD
+  A[前端提交参数 POST /api/generations] --> B{参数与枚举校验}
+  B -- 失败 --> B1[400 INVALID_INPUT]
+  B -- 通过 --> C{幂等键 + 配额检查}
+  C -- 重复/超额 --> C1[409 DUPLICATE_REQUEST / 429 RATE_LIMITED]
+  C -- 通过 --> D[创建任务 status=queued]
+  D --> E[Worker 领取任务 status=running]
+  E --> F[注入上下文: journey_stage · persona · brand_facts · viral_keywords]
+  F --> G[组装 Prompt: system_prompt + user_prompt + output_schema]
+  G --> H[调用模型 invokeModel]
+  H -- 5xx/超时 --> H1[指数退避重试 ≤2 次]
+  H1 -- 仍失败 --> H2[status=failed 记录 error_code]
+  H -- 成功 --> I{JSON Schema 解析}
+  I -- 失败 --> I1[重试 1 次]
+  I1 -- 仍失败 --> I2[MODEL_OUTPUT_INVALID → status=failed]
+  I -- 成功 --> J[引擎专属后处理 postProcess]
+  J --> K{合规知识库三重校验}
+  K -- 命中高风险 --> K1[COMPLIANCE_BLOCKED，不写入可发布资产]
+  K -- 通过 --> L[落库 generation_outputs + assets]
+  L --> M[status=succeeded，SSE/轮询推送前端]
+  M --> N[用户下载/发布 → status=exported]
+```
+
+#### 6.9.2 AI 图片生成（`FR-IMG`）
+```mermaid
+flowchart TD
+  A[输入: prompt/style/scene/vehicle/ratio/count] --> B[通用校验+配额]
+  B --> C[注入车型知识库事实 + viral_keywords]
+  C --> D[组装 Prompt A]
+  D --> E[调用图像模型，按 ratio 生成 count 张]
+  E --> F{输出宽高比=ratio 且数量=count}
+  F -- 不满足 --> F1[MODEL_OUTPUT_INVALID 重试1次]
+  F -- 满足 --> G[画质/品牌安全检测: 无乱码/无竞品Logo/无水印]
+  G --> H[合规校验]
+  H --> I[落库 4 张候选图 + revisedPrompt]
+  I --> J[前端网格展示，用户选中 1 张]
+  J --> K[按导出比例条一键导出]
+```
+
+#### 6.9.3 AI 图文生成（`FR-TXT`，含 SEO 优化子流程）
+```mermaid
+flowchart TD
+  A[输入: topic/platform/tone/length/keywords/brand_facts] --> B[通用校验+配额]
+  B --> C{选题来源}
+  C -- 智能推荐 --> C1[按 journey_stage+平台+爆款关键词推荐选题]
+  C1 --> C2[用户点击刷新→重新推荐 / 点击选题→回填标题]
+  C -- 手动输入 --> C3[用户直接输入标题，跳过推荐]
+  C2 --> D[组装 Prompt B]
+  C3 --> D
+  D --> E[调用文本模型，生成 title/body/tags/coverSuggestions]
+  E --> F{wordCount 误差 ≤5%}
+  F -- 不满足 --> F1[重试1次→仍失败 MODEL_OUTPUT_INVALID]
+  F -- 满足 --> G[SEO 规则引擎评分]
+  G --> G1[关键词覆盖/密度 · 标题质量 · 可读性 · 结构 · 事实匹配 · CTA · 平台适配]
+  G1 --> H{是否存在 blocker 级问题}
+  H -- 是 --> H1[标记未通过，返回 issues[] 供修改，不判定"SEO优化完成"]
+  H -- 否 --> I[合规知识库校验]
+  I --> J[落库正文+大纲，前端可拖拽调整大纲顺序]
+  J --> K[一键复制 / 平台格式转换 / 长尾关键词复制]
+```
+
+#### 6.9.4 AI 视频生成（`FR-VID`）
+```mermaid
+flowchart TD
+  A[输入: topic/digital_human/voice/video_type/video_size/duration_sec/vehicle_facts] --> B[通用校验+配额]
+  B --> C[注入 journey_stage + viral_keywords]
+  C --> D[组装 Prompt C]
+  D --> E[调用视频脚本模型，生成 storyboard[] + captions[]]
+  E --> F{Σ storyboard.durationSec = duration_sec}
+  F -- 不满足 --> F1[MODEL_OUTPUT_INVALID 重试1次]
+  F -- 满足 --> G{字幕与口播逐句对应}
+  G -- 不满足 --> G1[标记待修复，不进入合成]
+  G -- 满足 --> H[数字人驱动+配音合成+字幕烧录+卡点合成]
+  H --> I[合规校验：性能/价格/续航/背书均来自 vehicle_facts]
+  I --> J[落库 videoUrl/coverUrl，写 generation_outputs]
+  J --> K[前端渲染分镜时间轴，可切换镜头预览]
+  K --> L[直播回放上传 → 独立切片子流程，产出 N 条切片资产]
+```
+
+#### 6.9.5 AI PPT 生成（`FR-PPT`）
+```mermaid
+flowchart TD
+  A[输入: topic/scene/template/pages/audience/data] --> B[通用校验+配额]
+  B --> C[组装 Prompt D]
+  C --> D[调用模型，生成 slides[]（每页 title/bullets/chart/notes）]
+  D --> E{slides.length = pages}
+  E -- 不满足 --> E1[MODEL_OUTPUT_INVALID 重试1次]
+  E -- 满足 --> F{图表数据口径/单位/来源齐全}
+  F -- 缺失 --> F1[标记"待补充"，不得伪造数值]
+  F -- 齐全 --> G[合规校验]
+  G --> H[落库 slides + notes，套用视觉模板]
+  H --> I[前端缩略图翻页 / 演示模式 / 图表推荐插入]
+  I --> J[导出 PPTX/PDF：生成文件→签名下载URL→exported]
+```
+
+#### 6.9.6 朋友圈图文（`FR-MOM`）
+```mermaid
+flowchart TD
+  A[输入: scene/persona/image_size/watermark/vehicle/offer/store_info] --> B[通用校验+配额]
+  B --> C[组装 Prompt E]
+  C --> D[调用模型，生成 copy/images/hashtags/watermark]
+  D --> E{copy 长度 80–180 字 且 hashtags 3–5 个}
+  E -- 不满足 --> E1[MODEL_OUTPUT_INVALID 重试1次]
+  E -- 满足 --> F[合规知识库校验：库存/价格/客户案例/联系方式来源核验]
+  F -- 命中高风险 --> F1[COMPLIANCE_BLOCKED，返回 compliance.findings]
+  F -- 通过 --> G{watermark 输出与用户勾选一致}
+  G -- 不一致 --> G1[标记异常，禁止自行追加二维码/电话/Logo]
+  G -- 一致 --> H[落库文案+配图建议，按 image_size 渲染手机预览]
+  H --> I[复制文案 / 发送到微信（发送中→已发送）]
+```
 
 ## 7. 迭代规划
 
