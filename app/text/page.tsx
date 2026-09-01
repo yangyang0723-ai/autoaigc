@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   PenLine,
   ImageIcon,
+  RefreshCw,
 } from 'lucide-react'
 
 const contentTypes = ['公众号推文', '小红书种草', '知乎回答', '商品详情页', '微博文案']
@@ -75,6 +76,10 @@ export default function TextPage() {
   const [copied, setCopied] = useState(false)
   const [converting, setConverting] = useState(false)
   const [convertedTo, setConvertedTo] = useState<string | null>(null)
+  const [selectedTopic, setSelectedTopic] = useState(topics[0].t)
+  const [topicOffset, setTopicOffset] = useState(0)
+  const [refreshingTopics, setRefreshingTopics] = useState(false)
+  const [manualTitle, setManualTitle] = useState('')
 
   const articleText = `实测 2026 款星海 SUV：这台旗舰把智能座舱卷到了新高度
 
@@ -110,6 +115,18 @@ export default function TextPage() {
     }, 1100)
   }
 
+  function refreshTopics() {
+    if (refreshingTopics) return
+    setRefreshingTopics(true)
+    setTopicOffset((offset) => (offset + 1) % topics.length)
+    window.setTimeout(() => setRefreshingTopics(false), 500)
+  }
+
+  function chooseTopic(topic: string) {
+    setSelectedTopic(topic)
+    setManualTitle(topic)
+  }
+
   function generate() {
     setStatus('generating')
     setStep(0)
@@ -129,21 +146,51 @@ export default function TextPage() {
       {/* Left controls */}
       <div className="flex flex-col gap-4">
         <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Lightbulb className="size-4 text-primary" />
-            智能选题推荐（FR-TXT-001）
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Lightbulb className="size-4 text-primary" />
+              智能选题推荐（FR-TXT-001）
+            </div>
+            <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={refreshTopics} disabled={refreshingTopics}>
+              <RefreshCw className={cn('size-3.5', refreshingTopics && 'animate-spin')} />
+              {refreshingTopics ? '推荐中' : '刷新推荐'}
+            </Button>
           </div>
           <div className="space-y-2">
-            {topics.map((t) => (
-              <button
-                key={t.t}
-                className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-left text-xs transition-colors hover:border-primary/40"
-              >
-                <span className="font-medium">{t.t}</span>
-                <Badge variant="warning">{t.hot}</Badge>
-              </button>
-            ))}
+            {topics.map((_, index) => {
+              const topic = topics[(index + topicOffset) % topics.length]
+              return (
+                <button
+                  key={topic.t}
+                  type="button"
+                  onClick={() => chooseTopic(topic.t)}
+                  className={cn('flex w-full items-center justify-between rounded-lg border bg-background px-3 py-2 text-left text-xs transition-colors hover:border-primary/40', selectedTopic === topic.t ? 'border-primary/50 bg-primary/10' : 'border-border')}
+                >
+                  <span className="font-medium">{topic.t}</span>
+                  <Badge variant="warning">{topic.hot}</Badge>
+                </button>
+              )
+            })}
           </div>
+        </Card>
+
+        <Card className="p-5">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold">
+            <PenLine className="size-3.5 text-primary" />
+            手动输入标题
+          </div>
+          <p className="mb-2 text-[11px] text-muted-foreground">不使用推荐选题时，可直接输入文章标题</p>
+          <input
+            value={manualTitle}
+            onChange={(event) => {
+              setManualTitle(event.target.value)
+              setSelectedTopic('')
+            }}
+            placeholder="例如：25万级新能源 SUV 怎么选？"
+            maxLength={80}
+            className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
+          />
+          <p className="mt-2 text-right text-[10px] text-muted-foreground">{manualTitle.length}/80</p>
         </Card>
 
         <Card className="p-5">
@@ -216,7 +263,7 @@ export default function TextPage() {
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <FileText className="size-4 text-primary" />
-                图文预览
+                ��文预览
               </div>
               <Button
                 variant="outline"
