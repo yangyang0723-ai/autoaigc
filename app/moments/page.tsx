@@ -183,7 +183,7 @@ export default function MomentsPage() {
               ) : (
                 <>
                   <Sparkles className="size-4" />
-                  {status === 'done' ? '重新生成文案' : '一键生���文案'}
+                  {status === 'done' ? '重新生成文案' : '一键生成文案'}
                 </>
               )}
             </Button>

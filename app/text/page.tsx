@@ -220,7 +220,7 @@ export default function TextPage() {
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <FileText className="size-4 text-primary" />
-                ��文预览
+                正文预览
               </div>
               <Button
                 variant="outline"
@@ -258,7 +258,7 @@ export default function TextPage() {
               <p className="text-xs text-primary">图 1 · 星海 SUV 外观科技美学</p>
               <h3 className="text-base font-semibold">外观设计：科技美学的极致表达</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                贯穿式日间行车灯配合封闭式前脸，风阻���数低至 0.23Cd。车身长度 4980mm，轴距
+                贯穿式日间行车灯配合封闭式前脸，风阻系数低至 0.23Cd。车身长度 4980mm，轴距
                 2950mm，为后排腿部空间打下扎实基础。
                 <span className="rounded bg-primary/15 px-1 text-primary">
                   （数据来源：车型数据库 · FR-TXT-003 专业知识注入）

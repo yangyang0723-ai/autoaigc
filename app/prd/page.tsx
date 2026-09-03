@@ -148,7 +148,7 @@ const modules: Module[] = [
     code: 'FR-PPT',
     route: '/ppt',
     title: 'AI PPT 生成',
-    desc: '生成发布��、培训、汇报类演示文稿。',
+    desc: '生成发布会、培训、汇报类演示文稿。',
     icon: Presentation,
     frs: [
       { id: 'FR-PPT-001', title: '智能大纲生成', desc: '输入汇报主题与应用场景，生成分页大纲结构。' },
@@ -223,15 +223,15 @@ const modules: Module[] = [
 ]
 
 const promptSpecs = [
-  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出���畸变、乱码、���假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
-  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较���按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正��字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
+  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、虚假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
+  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正文字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
   { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、viral_keywords、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
   { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、viral_keywords、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
   { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', journey: '购买决策 / 交付分享 / 车主运营：以门店和顾问的可信关系推动咨询、到店、交付分享和售后复购。', vars: 'journey_stage、viral_keywords、scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。', prompt: '你是一线汽车销售顾问的朋友圈内容助手。请为{{journey_stage}}阶段生成{{persona}}口吻的{{scene}}图文，车型{{vehicle}}，活动事实{{offer}}，门店信息{{store_info}}，配图{{image_size}}。正文80–180字，低打扰并包含咨询 CTA；只返回包含 copy、images[]、hashtags[]、watermark[]、compliance 的 JSON。' },
 ]
 
 const nonFunctional = [
-  { k: '性能', v: '生成过程分阶段可��化��单条内容目标分钟级；交互即时响应。' },
+  { k: '性能', v: '生成过程分阶段可视化；单条内容目标分钟级；交互即时响应。' },
   { k: '可用性', v: '所有可点击元素具备点击反馈（按压 / 加载 / 成功态）。' },
   { k: '可访问性', v: '语义化 HTML、ARIA 标注、键盘可达（卡片 Enter/Space、弹层 Esc）。' },
   { k: '响应式', v: '采用设计系统断点与布局原语，移动端到宽屏自适应。' },
@@ -247,7 +247,7 @@ const metrics = [
   { k: '活跃门店数', v: 'COUNT(DISTINCT store_id)', calc: '统计期内有成功生成、下载、发布或登录事件', dir: '↑' },
   { k: '合规拦截率', v: 'blocked 校验数 / 全部校验数 × 100%', calc: '来源 compliance_checked；按时间范围聚合', dir: '稳定' },
   { k: '近 7 天生成趋势', v: '按日、内容类型 COUNT(DISTINCT task_id)', calc: '最近 7 个自然日；无数据日补 0；周环比对比前 7 日', dir: '图表' },
-  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容��� × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
+  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容数 × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
   { k: '互动率', v: '(点赞 + 评论 + 分享) / 曝光 × 100%', calc: '热门内容按曝光降序取 TOP 5；曝光为 0 显示 —', dir: '图表' },
   { k: '门店活跃度', v: '该店成功生成任务数 / TOP1 门店任务数 × 100%', calc: '门店榜按 COUNT(DISTINCT task_id) 降序', dir: '图表' },
 ]
@@ -283,7 +283,7 @@ const engineFlows: { id: string; title: string; icon: LucideIcon; steps: FlowSte
       { label: '注入上下文', note: '车型知识库事实 + viral_keywords（核心/场景/证据词）' },
       { label: '组装 Prompt A 并调用图像模型', note: '按 ratio 生成 count 张候选图' },
       { label: '校验输出', note: '宽高比=ratio 且数量=count', decision: { pass: '进入品牌安全检测', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
-      { label: '品牌安���检测', note: '无乱码 / 无竞品 Logo / 无水印 / 无畸变' },
+      { label: '品牌安全检测', note: '无乱码 / 无竞品 Logo / 无水印 / 无畸变' },
       { label: '合规知识库校验', note: '三重校验：平台规则 / 敏感词 / 行业规范', decision: { pass: '落库 4 张候选图 + revisedPrompt', fail: 'COMPLIANCE_BLOCKED' } },
       { label: '前端网格展示', note: '用户选中 1 张 → 按导出比例条一键导出' },
     ],
@@ -359,12 +359,12 @@ const risks = [
   { k: '生成模型质量', v: '质量依赖底层模型', a: '多模型 + 采纳率反馈优化' },
   { k: '合规知识库时效', v: '广告法 / 平台规则更新频繁', a: '实时同步 + 专家维护' },
   { k: '多平台规则差异', v: '各平台格式与限制不同', a: '按平台注入 Prompt 约束 + 站内线索组件' },
-  { k: '数据准确性', v: '指标依赖埋点与回流', a: '统一埋点规范��数据校验' },
+  { k: '数据准确性', v: '指标依赖埋点与回流', a: '统一埋点规范 + 数据校验' },
 ]
 
 const toc = [
   { id: 'overview', label: '1. 文档概述', icon: ScrollText },
-  { id: 'architecture', label: '2. 产品���体架构', icon: Layers },
+  { id: 'architecture', label: '2. 产品总体架构', icon: Layers },
   ...modules.map((m, i) => ({ id: m.id, label: `3.${i + 1} ${m.title}`, icon: m.icon })),
   { id: 'prompt-specs', label: '3.10 提示词规范', icon: Sparkles },
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
@@ -602,7 +602,7 @@ export default function PrdPage() {
               ))}
             </div>
             <div className="mt-3 rounded-lg border border-border bg-secondary/20 p-4 text-xs leading-relaxed text-muted-foreground">
-              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中���返回明确错误码；同一版本下输出字段稳定。
+              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中时返回明确错误码；同一版本下输出字段稳定。
             </div>
           </Section>
 
@@ -693,8 +693,8 @@ export default function PrdPage() {
             <Card className="mb-4 border-primary/25 bg-primary/[0.04] p-4">
               <p className="text-sm font-medium">统一流水线</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组�� Prompt →
-                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重��� 1 次） → 引擎专属后处理 → 合规知识库三重校验
+                提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组装 Prompt →
+                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
                 → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该流水线与 6.2 状态机、6.6 错误码，
                 差异仅在下方各引擎的专属校验与后处理节点。
               </p>
