@@ -315,7 +315,7 @@ flowchart TD
 | `style` | select | 科技感 / 写实商业 / 运动动感 / 豪华质感 / 国潮插画 | 科技感 |
 | `ratio` | select | 1:1 / 16:9 / 9:16 / 3:4 / 2.35:1 | 1:1 |
 | `count` | number | 1–8 | 4 |
-| `referenceImage` | text | 可选，参考图 URL | — |
+| `referenceImage` | text | 可��，参考图 URL | — |
 
 **比例映射 `RATIO_SIZE`**：`1:1→1024×1024`、`16:9→1280×720`、`9:16→720×1280`、`3:4→900×1200`、`2.35:1→1410×600`
 
@@ -400,7 +400,7 @@ images 数量必须等于 {{count}}，width/height 必须符合 {{ratio}}；失�
 | `platform` | 公众号 / 小红书 / 微博 / 知乎 | 公众号 |
 | `tone` | 专业权威 / 亲切种草 / 幽默活泼 / 热血激情 | 专业权威 |
 | `length` | 短文 (300字) / 中篇 (600字) / 长文 (1200字) | 中篇 |
-| `keywords` | multiselect，可选，用于 SEO | — |
+| `keywords` | multiselect，可选，用于内容选题与平台表达 | — |
 | `imageSize` | 16:9 / 4:3 / 1:1 / 3:4 | 16:9 |
 
 **字数映射 `LENGTH_WORDS`**：短文 300 / 中篇 600 / 长文 1200
@@ -410,7 +410,7 @@ images 数量必须等于 {{count}}，width/height 必须符合 {{ratio}}；失�
 { title: string; body: string; tags: string[]; coverSuggestions: string[]; wordCount: number }
 ```
 
-**生成阶段**：解析选题与平台 → 生成内容大纲 → AI 撰写正文 → 优化标签配图
+**生成阶段**：解析选题与平台 → 生成内容大纲 → AI 撰写正文 → 生成标签与配图建议
 
 **功能需求**
 
@@ -420,56 +420,10 @@ images 数量必须等于 {{count}}，width/height 必须符合 {{ratio}}；失�
 | FR-TXT-002 | 手动标题输入 | 可直接输入自定义标题替代推荐选题 |
 | FR-TXT-003 | 专业知识注入 | 正文中车型参数标注「数据来源：车型数据库」 |
 | FR-TXT-004 | 平台与风格参数 | 平台 / 语气 / 字数 / 配图尺寸四组参数 |
-| FR-TXT-005 | SEO 优化 | 输出评分与问题项（详见 4.2.1） |
-| FR-TXT-006 | 长尾关键词建议 | 展示推荐关键词，点击复制并带反馈 |
-| FR-TXT-007 | 图文混排预览 | 正文与配图按 `imageSize` 渲染 |
-| FR-TXT-008 | 一键复制 | 复制正文，带「已复制」反馈 |
-| FR-TXT-009 | 生成过程动效 | 4 阶段「AI 正在生成图文内容」 |
-
-#### 4.2.1 SEO 优化规则（FR-TXT-005）
-
-在 `run()` 后处理阶段执行，输入为 `title` + `body` + `platform` + `keywords` + `journey_stage` + 车型事实。评分仅辅助编辑，**不得暗示搜索排名或承诺曝光**。
-
-| 检查项 | 计算方式 | 通过标准 |
-| --- | --- | --- |
-| 关键词覆盖 | 核心词是否出现在标题或首段；痛点词在正文前 30%；证据词与事实同段 | 核心词覆盖 100%，证据词均有 `evidence_id` |
-| 关键词密度 | `有效出现次数 / 正文中文字符数 × 100%`，同义词合并 | 1%–3%，> 3% 标记堆砌且不自动加词 |
-| 标题质量 | 长度 + 核心词前置 + 利益点 + 禁用词 | 公众号 10–28 字 / 小红书 12–24 字 / 微博 8–20 字 / 知乎 15–30 字 |
-| 首段吸引力 | 前 80 字是否含场景或痛点 + 1 个可验证利益点 | 同时命中，不得使用虚假悬念 |
-| 内容结构 | 小标题、段落、列表、CTA 完整性 | 移动端段落 40–120 字；每 300–500 字至少 1 个小标题或列表 |
-| 可读性 | `100 - 长句扣分 - 术语密度扣分 - 段落过长扣分 - 重复扣分` | ≥ 80 分；平均句长 ≤ 45 字；术语首次出现需解释 |
-| 事实匹配 | 价格 / 配置 / 续航 / 金融 / 权益断言与 `brand_facts` 逐条比对 | 匹配率 100%，无来源事实改为「待确认」 |
-| CTA 转化 | 按购车阶段匹配 CTA 类型 | 恰好 1 个主 CTA，门店入口必须来自输入资料 |
-| 平台适配 | 平台禁用词、标签数量、标题长度、语气 | 全部通过，禁止跨平台原样复制 |
-
-**SEO 输出字段**：`seo_score`、`keyword_density`、`keyword_coverage`、`title_score`、`readability_score`、`fact_match_rate`、`issues[]`（`blocker` / `warning` / `suggestion`）、`used_keywords[]`、`rejected_keywords[]`、`revised_content`（可选）。存在 `blocker` 时禁止标记为「SEO 优化完成」。
-
-**AI 调用流程**
-
-```mermaid
-flowchart TD
-  A[topic / platform / tone / length / keywords / imageSize] --> B["validate：topic 非空"]
-  B -- 失败 --> B1[INVALID_INPUT]
-  B -- 通过 --> C{选题来源}
-  C -- 智能推荐 --> C1[按购车旅程 + 平台 + 爆款关键词推荐选题列表]
-  C1 --> C2[刷新重推 / 点击选题回填标题]
-  C -- 手动输入 --> C3[使用用户自定义标题]
-  C2 --> D[阶段1 解析选题与平台，匹配调性与人群]
-  C3 --> D
-  D --> E[阶段2 生成内容大纲：标题 + 段落结构]
-  E --> F["Prompt 组装：内容运营专家角色 + brand_facts + tone / length + 输出 Schema"]
-  F --> G["阶段3 AI 撰写正文，目标字数 = LENGTH_WORDS[length]"]
-  G --> H{"字数校验：误差 ≤ 5%"}
-  H -- 不满足 --> H1[重试 1 次 → 仍失败 MODEL_ERROR]
-  H -- 满足 --> I["阶段4 生成 tags 与 coverSuggestions"]
-  I --> J[SEO 规则引擎评分]
-  J --> K{存在 blocker 级问题}
-  K -- 是 --> K1["返回 issues[]，不标记 SEO 通过"]
-  K -- 否 --> L[合规网关校验 body]
-  L -- 命中 high --> L1[展示整改建议，禁止直接发布]
-  L -- 通过 --> M[返回 title / body / tags / coverSuggestions / wordCount]
-  M --> N[图文混排预览 + 一键复制 + 关键词复制]
-```
+| FR-TXT-005 | 长尾关键词建议 | 展示推荐关键词，服务于内容选题与平台表达，点击复制并带反馈 |
+| FR-TXT-006 | 图文混排预览 | 正文与配图按 `imageSize` 渲染 |
+| FR-TXT-007 | 一键复制 | 复制正文，带「已复制」反馈 |
+| FR-TXT-008 | 生成过程动效 | 4 阶段「AI 正在生成图文内容」；不提供 SEO 评分与优化结果 |
 
 **完整 Prompt 模板**
 ```text
@@ -863,7 +817,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 
 ---
 
-## 8. 迭代规划
+## 8. 迭代规���
 
 | 阶段 | 范围 | 关键交付 |
 | --- | --- | --- |

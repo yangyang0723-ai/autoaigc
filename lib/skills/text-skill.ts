@@ -29,7 +29,7 @@ export const textSkill: Skill<TextInput, TextOutput> = {
     { key: 'platform', label: '发布平台', type: 'select', options: PLATFORMS, default: PLATFORMS[0] },
     { key: 'tone', label: '文案语气', type: 'select', options: TONES, default: TONES[0] },
     { key: 'length', label: '字数控制', type: 'select', options: LENGTHS, default: LENGTHS[1] },
-    { key: 'keywords', label: '长尾关键词', type: 'multiselect', hint: '可选，用于 SEO' },
+    { key: 'keywords', label: '长尾关键词', type: 'multiselect', hint: '可选，用于内容选题与平台表达' },
     { key: 'imageSize', label: '配图尺寸', type: 'select', options: ['16:9', '4:3', '1:1', '3:4'], default: '16:9' },
   ],
   stages: [

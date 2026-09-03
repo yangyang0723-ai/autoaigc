@@ -15,7 +15,6 @@ import {
   Wand2,
   Copy,
   ListTree,
-  Gauge,
   Loader2,
   CheckCircle2,
   PenLine,
@@ -47,22 +46,8 @@ const genSteps = [
   { icon: ListTree, label: '生成内容大纲', desc: '构建六段式文章结构' },
   { icon: PenLine, label: 'AI 正文撰写', desc: '逐段生成专业图文内容' },
   { icon: ImageIcon, label: '智能配图匹配', desc: '从素材库匹配场景图' },
-  { icon: Gauge, label: 'SEO 优化排版', desc: '关键词密度与可读性调优' },
 ]
 
-function SeoBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">{value}</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
-      </div>
-    </div>
-  )
-}
 
 export default function TextPage() {
   const [type, setType] = useState(contentTypes[0])
@@ -214,8 +199,8 @@ export default function TextPage() {
           <GenerationProcess step={step} />
         ) : (
         <>
-        {/* Article preview + SEO */}
-        <div className="grid gap-4 xl:grid-cols-[1fr_280px]">
+        {/* Article preview + platform adaptation */}
+        <div className="grid gap-4">
           <Card className="overflow-hidden p-0">
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -272,28 +257,6 @@ export default function TextPage() {
           </Card>
 
           <div className="flex flex-col gap-4">
-            <Card className="p-5">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Gauge className="size-4 text-primary" />
-                SEO 优化（FR-TXT-005）
-              </div>
-              <div className="space-y-3">
-                <SeoBar label="关键词密度" value={72} />
-                <SeoBar label="标题吸引力" value={88} />
-                <SeoBar label="可读性评分" value={81} />
-              </div>
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold">长尾关键词建议</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {['星海SUV怎么样', '25万新能源SUV', '智能座舱对比', '0首付购车'].map((keyword) => (
-                    <span key={keyword} className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
             <Card className="p-5">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <Layers className="size-4 text-primary" />
