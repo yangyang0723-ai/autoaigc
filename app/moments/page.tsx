@@ -10,8 +10,6 @@ import {
   Sparkles,
   Mic,
   Copy,
-  Send,
-  CalendarDays,
   QrCode,
   Smile,
   ImagePlus,
@@ -31,13 +29,6 @@ const imageSizes = [
   { label: '竖图 3:4', ratio: 'aspect-[3/4]' },
   { label: '横图 4:3', ratio: 'aspect-[4/3]' },
 ]
-const calendar = [
-  { day: '周一', topic: '早安 · 正能量', done: true },
-  { day: '周二', topic: '车型种草 · 星海 SUV', done: true },
-  { day: '周三', topic: '养车知识 · 夏季用车', done: false },
-  { day: '周四', topic: '限时促销 · 0 首付', done: false },
-  { day: '周五', topic: '交车喜报', done: false },
-]
 
 const copywriting = `【提前锁定爱车 · 抢占0首付名额】🚗
 
@@ -50,8 +41,6 @@ const copywriting = `【提前锁定爱车 · 抢占0首付名额】🚗
 懂车的朋友都在问，名额有限，私信我帮你算方案～
 
 #星海SUV #新能源 #0首付购车`
-
-const watermarkOptions = ['个人二维码 / 联系方式', '品牌 Logo + 门店信息', '水印位置 · 右下角']
 
 const genSteps = [
   { icon: ScanText, label: '解析场景与人设', desc: '结合内容日历与人设风格' },
@@ -69,10 +58,8 @@ export default function MomentsPage() {
   const [status, setStatus] = useState<'idle' | 'generating' | 'done'>('idle')
   const [genStep, setGenStep] = useState(0)
   const [copied, setCopied] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
   const [liked, setLiked] = useState(false)
-  const [watermarks, setWatermarks] = useState<string[]>(watermarkOptions)
+  const watermarks = ['个人二维码 / 联系方式']
 
   function generate() {
     setStatus('generating')
@@ -98,21 +85,6 @@ export default function MomentsPage() {
     } else {
       done()
     }
-  }
-
-  function handleSend() {
-    if (sending) return
-    setSending(true)
-    setSent(false)
-    setTimeout(() => {
-      setSending(false)
-      setSent(true)
-      setTimeout(() => setSent(false), 2200)
-    }, 1200)
-  }
-
-  function toggleWatermark(w: string) {
-    setWatermarks((prev) => (prev.includes(w) ? prev.filter((x) => x !== w) : [...prev, w]))
   }
 
   return (
@@ -221,28 +193,6 @@ export default function MomentsPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <CalendarDays className="size-4 text-primary" />
-            每日内容日历（FR-MOM-003）
-          </div>
-          <div className="space-y-2">
-            {calendar.map((c) => (
-              <div
-                key={c.day}
-                className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-2 text-xs"
-              >
-                <span className="w-8 font-semibold text-muted-foreground">{c.day}</span>
-                <span className="flex-1">{c.topic}</span>
-                {c.done ? (
-                  <Badge variant="success">已排期</Badge>
-                ) : (
-                  <Badge variant="muted">待生成</Badge>
-                )}
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
 
       {/* Right: phone preview */}
@@ -304,46 +254,10 @@ export default function MomentsPage() {
           </div>
         </div>
 
-        <Card className="p-4">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <QrCode className="size-4 text-primary" />
-            素材水印（FR-MOM-006）
-          </div>
-          <div className="space-y-2 text-xs">
-            {watermarkOptions.map((w) => {
-              const on = watermarks.includes(w)
-              return (
-                <button
-                  key={w}
-                  type="button"
-                  onClick={() => toggleWatermark(w)}
-                  aria-pressed={on}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors active:scale-[0.99]',
-                    on ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'flex size-4 items-center justify-center rounded border transition-colors',
-                      on
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-transparent',
-                    )}
-                  >
-                    {on && <Check className="size-3" />}
-                  </span>
-                  {w}
-                </button>
-              )
-            })}
-          </div>
-        </Card>
-
         <div className="grid grid-cols-2 gap-2">
           <Button
             variant="outline"
-            className={cn('h-10 gap-1.5 transition-colors active:scale-95', copied && 'border-primary/50 text-primary')}
+            className={cn('h-10 gap-1 transition-colors active:scale-95', copied && 'border-primary/50 text-primary')}
             onClick={handleCopy}
           >
             {copied ? (
@@ -355,24 +269,6 @@ export default function MomentsPage() {
               <>
                 <Copy className="size-4" />
                 复制文案
-              </>
-            )}
-          </Button>
-          <Button className="h-10 gap-1.5 active:scale-95" onClick={handleSend} disabled={sending}>
-            {sending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                发送中…
-              </>
-            ) : sent ? (
-              <>
-                <CheckCircle2 className="size-4" />
-                已发送
-              </>
-            ) : (
-              <>
-                <Send className="size-4" />
-                发送到微信
               </>
             )}
           </Button>

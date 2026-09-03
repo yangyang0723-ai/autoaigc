@@ -10,7 +10,6 @@ import {
   Presentation,
   MessageCircle,
   FolderKanban,
-  BarChart3,
   ShieldCheck,
   Layers,
   Gauge,
@@ -42,14 +41,14 @@ type Module = {
 }
 
 const meta = {
-  version: 'v1.0 · 完整版',
-  status: '已评审基线',
+  version: 'v2.0 · 全量重写',
+  status: 'v1.x 已作废',
   product: '车智绘 AutoAIGC',
 }
 
 const overview = {
   purpose:
-    '车智绘（AutoAIGC）是面向汽车主机厂、经销商集团与一线销售的 AIGC 内容生产平台，通过「五大生成引擎 + 素材资产 + 数据分析 + 合规知识库」，将图片、图文、视频、PPT、朋友圈内容的生产周期从小时级压缩到分钟级，并在生成环节内置合规校验。',
+    '车智绘（AutoAIGC）是面向汽车主机厂、经销商集团与一线销售的 AIGC 内容生产平台，通过「五大生成引擎 + 素材资产 + 合规知识库」，将图片、图文、视频、PPT、朋友圈内容的生产周期从小时级压缩到分钟级。五大生成引擎统一采用可追踪、可恢复的工作流模式，按节点传递上下文并在完成前执行硬约束与合规校验。',
   roles: [
     { role: '品牌 / 市场经理', need: '批量高质量产出、数据洞察、风险可控' },
     { role: '内容运营', need: '高效、模板化、多平台一键适配' },
@@ -66,7 +65,7 @@ const navRows = [
   { group: '五大生成引擎', module: 'AI PPT 生成', route: '/ppt', icon: Presentation },
   { group: '五大生成引擎', module: '朋友圈图文', route: '/moments', icon: MessageCircle },
   { group: '资产与数据', module: '素材资产管理', route: '/assets', icon: FolderKanban },
-  { group: '资产与数据', module: '数据分析中台', route: '/analytics', icon: BarChart3 },
+
   { group: '合规中心', module: '知识库', route: '/knowledge', icon: ShieldCheck },
 ]
 
@@ -79,12 +78,12 @@ const modules: Module[] = [
     desc: '产品首页，聚合总览与快捷入口。',
     icon: LayoutDashboard,
     frs: [
-      { id: 'FR-HOME-001', title: '平台概览 Hero', desc: '展示平台定位与「开始创作」「查看数据看板」两个 CTA，均带点击反馈并跳转。' },
+      { id: 'FR-HOME-001', title: '平台概览 Hero', desc: '展示平台定位与「开始创作」主 CTA，带点击反馈并跳转。' },
       { id: 'FR-HOME-002', title: '五大生成引擎入口', desc: '卡片陈列五大引擎，hover 抬升 + 发光，点击进入对应引擎。' },
-      { id: 'FR-HOME-003', title: '热门模板', desc: 'hover 浮现「使用模板」，点击跳转对应引擎；「查看全部模板库」跳转素材库。' },
-      { id: 'FR-HOME-004', title: '关键指标概览', desc: '以卡片呈现核心数据摘要。' },
+      { id: 'FR-HOME-003', title: '关键指标概览', desc: '以卡片呈现生成量、耗时、通过率、复用率等核心数据摘要。' },
+      { id: 'FR-HOME-004', title: '近 7 天生成趋势', desc: '按自然日聚合、无数据日补 0；卡片占满工作台主内容网格整行，图表使用 100% 宽度响应式填充。' },
     ],
-    acceptance: '所有卡片与按钮可点击并有反馈；模板卡片按类型正确路由。',
+    acceptance: '所有卡片与按钮可点击并有反馈；引擎卡片按类型正确路由；近 7 天趋势卡片占满主内容宽度且图表响应式填充；图表无数据时展示占位。',
   },
   {
     id: 'image',
@@ -95,12 +94,14 @@ const modules: Module[] = [
     icon: ImageIcon,
     frs: [
       { id: 'FR-IMG-001', title: '创意描述输入', desc: '支持文本 Prompt 输入，描述期望画面。' },
-      { id: 'FR-IMG-002', title: '生成参数配置', desc: '风格、场景、车型等参数选择（Chip 单选），选中态明确。' },
-      { id: 'FR-IMG-003', title: '图片尺寸 / 比例选择', desc: '朋友圈 1:1、抖音 9:16、小红书 3:4、微博 16:9、公众号封面 2.35:1。' },
-      { id: 'FR-IMG-004', title: '生成结果网格', desc: '网格展示多张候选，支持选中某一张（选中态高亮）。' },
-      { id: 'FR-IMG-005', title: '一键导出比例条', desc: '展示当前选中图片及可用导出比例，供快速导出。' },
+      { id: 'FR-IMG-002', title: '视觉风格选择', desc: '科技感 / 写实商业 / 运动动感 / 豪华质感 / 国潮插画，Chip 单选。' },
+      { id: 'FR-IMG-003', title: '导出比例选择', desc: '1:1、16:9、9:16、3:4、2.35:1，映射到固定输出尺寸。' },
+      { id: 'FR-IMG-004', title: '生成数量控制', desc: '1–8 张，超出范围返回 INVALID_INPUT。' },
+      { id: 'FR-IMG-005', title: '生成结果网格', desc: '网格展示候选图，点击选中，选中态描边高亮。' },
+      { id: 'FR-IMG-006', title: '图片操作', desc: '每张图支持收藏 / 放大 / 下载，均有点击反馈。' },
+      { id: 'FR-IMG-007', title: '生成过程动效', desc: '按解析描述 → 匹配风格 → 扩散生成 → 超分出图四阶段渲染。' },
     ],
-    acceptance: '参数为单选且状态清晰；选中图片高亮；导出比例条随选中图片更新。',
+    acceptance: '参数为单选且状态清晰；按工作流节点展示生成进度并支持失败节点重试；输出数量等于 count、尺寸符合所选比例；选中图片高亮且操作均有反馈。',
   },
   {
     id: 'text',
@@ -110,20 +111,16 @@ const modules: Module[] = [
     desc: '生成公众号推文、小红书种草、商品详情页图文。',
     icon: FileText,
     frs: [
-      { id: 'FR-TXT-001', title: '主题与关键词输入', desc: '输入内容主题、核心卖点。' },
-      { id: 'FR-TXT-002', title: '平台与风格选择', desc: '目标平台（公众号 / 小红书 / 微博 / 知乎）、字数控制。' },
-      { id: 'FR-TXT-003', title: '配图尺寸选择', desc: '16:9 / 4:3 / 1:1 / 3:4，驱动图文混排预览配图比例。' },
-      { id: 'FR-TXT-004', title: '大纲编排（可拖拽）', desc: '生成结构化大纲，支持拖拽排序调整段落顺序。' },
-      { id: 'FR-TXT-005', title: '正文与配图预览', desc: '图文混排预览，配图按所选尺寸渲染。' },
-      { id: 'FR-TXT-006', title: '一键复制', desc: '复制正文，带「已复制」反馈。' },
-      { id: 'FR-TXT-007', title: '平台格式转换', desc: '转换为目标平台格式，带加载态与「已适配」反馈。' },
-      { id: 'FR-TXT-008', title: '长尾关键词', desc: '展示推荐长尾关键词，点击可复制，带反馈。' },
-      { id: 'FR-TXT-009', title: '生成过程渲染', desc: '触发后右侧分阶段展示生成过程，完成后呈现结果。' },
-      { id: 'FR-TXT-010', title: 'SEO 优化规则', desc: '检查关键词覆盖、密度、标题质量、可读性、事实来源、CTA 与平台适配，输出评分和问题建议。' },
-      { id: 'FR-TXT-011', title: '智能选题推荐', desc: '基于购车旅程、平台、车型事实和爆款关键词推荐选题，支持刷新并回填标题。' },
-      { id: 'FR-TXT-012', title: '手动标题输入', desc: '用户可输入自定义标题，再选择平台、语气、字数和配图尺寸生成正文。' },
+      { id: 'FR-TXT-001', title: '智能选题推荐', desc: '基于购车旅程、平台、车型事实和爆款关键词推荐选题，支持刷新并回填标题。' },
+      { id: 'FR-TXT-002', title: '手动标题输入', desc: '可直接输入自定义标题替代推荐选题。' },
+      { id: 'FR-TXT-003', title: '专业知识注入', desc: '正文中车型参数标注「数据来源：车型数据库」。' },
+      { id: 'FR-TXT-004', title: '平台与风格参数', desc: '平台（公众号 / 小红书 / 微博 / 知乎）、语气、字数、配图尺寸四组参数。' },
+      { id: 'FR-TXT-005', title: '长尾关键词建议', desc: '展示推荐长尾关键词，服务于内容选题与平台表达，点击可复制并带反馈。' },
+      { id: 'FR-TXT-006', title: '图文混排预览', desc: '正文与配图按所选配图尺寸渲染。' },
+      { id: 'FR-TXT-007', title: '一键复制', desc: '复制正文，带「已复制」反馈。' },
+      { id: 'FR-TXT-008', title: '生成过程动效', desc: '按解析选题 → 生成大纲 → 撰写正文 → 优化标签配图四阶段渲染。' },
     ],
-    acceptance: '复制 / 转换 / 关键词均有反馈；SEO 评分与问题项可解释；关键词密度 1%–3%；事实匹配率 100%；尺寸切换实时改变配图比例。',
+    acceptance: '复制 / 转换 / 关键词均有反馈；工作流按节点传递选题、事实与正文结果，失败节点可重试；事实资料来源清晰；尺寸切换实时改变配图比例；不提供 SEO 评分与优化结果。',
   },
   {
     id: 'video',
@@ -133,36 +130,35 @@ const modules: Module[] = [
     desc: '生成数字人口播、车型展示、直播切片等短视频。',
     icon: Clapperboard,
     frs: [
-      { id: 'FR-VID-001', title: '脚本 / 主题输入', desc: '输入视频主题或脚本。' },
-      { id: 'FR-VID-002', title: '数字人与音色选择', desc: '选择数字人形象、配音音色（Chip 单选）。' },
-      { id: 'FR-VID-003', title: '视频类型选择', desc: '口播 / 展示 / 切片等类型。' },
-      { id: 'FR-VID-004', title: '视频尺寸选择', desc: '横版 16:9 / 竖版 9:16 / 方形 1:1，带比例缩略图标，驱动主预览与渲染画布比例。' },
-      { id: 'FR-VID-005', title: '直播回放上传与切片', desc: '上传直播回放自动解析切片，带加载态与「已生成 N 条切片」反馈。' },
+      { id: 'FR-VID-001', title: 'AI 脚本生成', desc: '输入视频主题或完整脚本。' },
+      { id: 'FR-VID-002', title: '视频类型选择', desc: '新车宣传片 / 卖点讲解 / 门店探店 / 促销快剪，Chip 单选。' },
+      { id: 'FR-VID-003', title: '数字人形象与音色', desc: '选择数字人形象与配音音色组合。' },
+      { id: 'FR-VID-004', title: '视频尺寸选择', desc: '横版 16:9 / 竖版 9:16 / 方形 1:1，驱动主预览与渲染画布比例。' },
+      { id: 'FR-VID-005', title: '时长控制', desc: '15–60 秒，超出范围返回 INVALID_INPUT。' },
       { id: 'FR-VID-006', title: '主预览与播放控制', desc: '主预览按所选尺寸渲染，支持播放 / 暂停切换。' },
-      { id: 'FR-VID-007', title: '智能分镜时间轴', desc: '缩略图展示分镜，点击切换预览镜头。' },
-      { id: 'FR-VID-008', title: '一键成片渲染过程', desc: '分阶段渲染：解析脚本 → 生成分镜 → 数字人口播 → 配音字幕 → 卡点合成。' },
+      { id: 'FR-VID-007', title: '直播回放上传与切片', desc: '上传直播回放自动解析高光切片，带「已生成 N 条切片」反馈。' },
+      { id: 'FR-VID-008', title: '智能分镜时间轴', desc: '固定 4 镜头缩略图展示，点击切换预览镜头。' },
+      { id: 'FR-VID-009', title: '一键成片渲染过程', desc: '按解析脚本 → 智能分镜 → 数字人口播 → 卡点合成四阶段渲染。' },
     ],
-    acceptance: '尺寸切换后主预览与渲染画布比例正确且居中约束；分镜可切换；成片过程分阶段可视。原「视频变体 A/B」已下线。',
+    acceptance: '工作流按节点传递脚本、分镜、音频与视频片段，节点状态可追踪且失败可重试；尺寸切换后预览比例正确；分镜时长之和等于目标时长；字幕与口播逐句对应；视频变体 A/B 不在本期范围。',
   },
   {
     id: 'ppt',
     code: 'FR-PPT',
     route: '/ppt',
     title: 'AI PPT 生成',
-    desc: '生成发布��、培训、汇报类演示文稿。',
+    desc: '生成发布会、培训、汇报类演示文稿。',
     icon: Presentation,
     frs: [
-      { id: 'FR-PPT-001', title: '主题与场景选择', desc: '选择汇报场景与主题。' },
-      { id: 'FR-PPT-002', title: '模板选择', desc: '选择行业视觉模板（Chip 单选）。' },
-      { id: 'FR-PPT-003', title: '大纲编排', desc: '生成分页大纲结构。' },
-      { id: 'FR-PPT-004', title: '幻灯片预览与翻页', desc: '主预览按页展示，支持缩略图翻页切换。' },
-      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲���������注。' },
-      { id: 'FR-PPT-006', title: '数据可视化图表', desc: '销量趋势 / 市场份额 / 客户画像 / 漏斗转化，点击推荐并插入当前页。' },
-      { id: 'FR-PPT-007', title: '演示模式', desc: '进入 / 退出演示态，画布显示「演示中」标记。' },
-      { id: 'FR-PPT-008', title: '导出', desc: '导出 PPTX / PDF，带加载态与「已导出」反馈。' },
-      { id: 'FR-PPT-009', title: '一键生成渲染过程', desc: '分阶段渲染：解析主题 → 编排大纲 → 套用模板 → 数据可视化 → 排版备注。' },
+      { id: 'FR-PPT-001', title: '智能大纲生成', desc: '输入汇报主题与应用场景，生成分页大纲结构。' },
+      { id: 'FR-PPT-002', title: '模板选择', desc: '科技蓝 / 商务金 / 极简白 / 国潮红，Chip 单选。' },
+      { id: 'FR-PPT-003', title: '页数控制', desc: '3–20 页，超出范围返回 INVALID_INPUT。' },
+      { id: 'FR-PPT-004', title: '幻灯片预览与翻页', desc: '主画布按页渲染，支持缩略图翻页切换。' },
+      { id: 'FR-PPT-005', title: '演示模式', desc: '进入 / 退出演示态，画布显示「演示中」标记。' },
+      { id: 'FR-PPT-006', title: '导出', desc: '导出 PPTX / PDF，带加载态与「已导出」反馈。' },
+      { id: 'FR-PPT-007', title: '一键生成渲染过程', desc: '按解析主题 → 编排大纲 → 套用模板 → 数据可视化四阶段渲染。' },
     ],
-    acceptance: '缩略图翻页、图表插入、演示切换、导出反馈均生效；生成过程分阶段可视。',
+    acceptance: '工作流按节点传递主题、大纲、模板与页面数据，结果可恢复并在持久化后导出；生成页数等于所选页数；缩略图翻页、演示切换、导出反馈均生效；图表缺少数据时标记「待补充」而非伪造数值。',
   },
   {
     id: 'moments',
@@ -172,17 +168,18 @@ const modules: Module[] = [
     desc: '面向一线销售的极简发圈工具。',
     icon: MessageCircle,
     frs: [
-      { id: 'FR-MOM-001', title: '场景与人设选择', desc: '选择发圈场景与人设风格（Chip 单选）。' },
-      { id: 'FR-MOM-002', title: '配图尺寸选择', desc: '方图 1:1 / 竖图 3:4 / 横图 4:3，驱动手机预览九宫格配图比例。' },
-      { id: 'FR-MOM-003', title: '配图选择与上传', desc: '从素材选择或上传配图。' },
-      { id: 'FR-MOM-004', title: '手机朋友圈实时预览', desc: '手机 mockup 展示朋友圈效果（头像、文案、配图、时间、点赞）。' },
+      { id: 'FR-MOM-001', title: '极简 3 步生成', desc: '选场景 → 选图片 → 一键生成，步骤条可视化。' },
+      { id: 'FR-MOM-002', title: '场景与人设选择', desc: '场景由每日内容日历自动推荐，人设风格 Chip 单选。' },
+      { id: 'FR-MOM-003', title: '配图选择与上传', desc: '从素材库选图或本地上传。' },
+      { id: 'FR-MOM-004', title: '配图尺寸选择', desc: '方图 1:1 / 竖图 3:4 / 横图 4:3，驱动手机预览九宫格比例。' },
       { id: 'FR-MOM-005', title: '水印与二维码', desc: '可勾选个人二维码 / 品牌 Logo / 水印位置，与预览联动。' },
-      { id: 'FR-MOM-006', title: '一键生成渲染过程', desc: '手机 mockup 骨架屏分阶段渲染，完成后恢复预览。' },
+      { id: 'FR-MOM-006', title: '手机朋友圈实时预览', desc: '手机 mockup 展示头像、文案、九宫格配图、时间与点赞。' },
       { id: 'FR-MOM-007', title: '点赞交互', desc: '预览内点赞可切换（红心 + 计数）。' },
-      { id: 'FR-MOM-008', title: '复制文案 / 发送到微信', desc: '复制带「已复制」；发送带「发送中 → 已发送」反馈。' },
-      { id: 'FR-MOM-009', title: '语音输入', desc: '支持语音输入创作诉求。' },
+      { id: 'FR-MOM-008', title: '语音输入', desc: '支持语音输入创作诉求。' },
+      { id: 'FR-MOM-009', title: '复制文案', desc: '一键复制，带「已复制」反馈。' },
+      { id: 'FR-MOM-010', title: '一键生成渲染过程', desc: '手机 mockup 骨架屏按四阶段渲染，完成后恢复预览。' },
     ],
-    acceptance: '尺寸与水印切换实时反映到预览；复制 / 发送 / 点赞均有反馈；生成过程分阶段可视。',
+    acceptance: '工作流按节点传递场景、人设、素材与水印配置，节点状态可追踪且失败可重试；尺寸与水印切换实时反映到预览；文案长度 80–180 字、标签 3–5 个；水印输出与勾选一致；复制与点赞均有反馈。',
   },
   {
     id: 'assets',
@@ -203,25 +200,7 @@ const modules: Module[] = [
     ],
     acceptance: '卡片 / 行点击打开详情；收藏状态跨视图共享；下载有反馈；弹层可正确关闭并锁滚动。',
   },
-  {
-    id: 'analytics',
-    code: 'FR-ANA',
-    route: '/analytics',
-    title: '数据分析中台',
-    desc: '全域内容生产与传播效果洞察。',
-    icon: BarChart3,
-    frs: [
-      { id: 'FR-ANA-001', title: '时间范围切换', desc: '近 7 天 / 近 30 天 / 本季度 / 本年。' },
-      { id: 'FR-ANA-002', title: '核心 KPI 卡片', desc: '生成总量、采纳率、平均耗时、活跃门店数，含环比涨跌。' },
-      { id: 'FR-ANA-003', title: '生成量 vs 采纳量趋势图', desc: '区间趋势折线 / 面积图。' },
-      { id: 'FR-ANA-004', title: '渠道分发占比', desc: '饼图 + 图例（各平台占比）。' },
-      { id: 'FR-ANA-005', title: '各引擎使用量', desc: '柱状图对比五大引擎调用次数。' },
-      { id: 'FR-ANA-006', title: '生产耗时对比', desc: '人工制作 vs 平台生成折线图。' },
-      { id: 'FR-ANA-007', title: '热门内容 TOP 5', desc: '表格（标题 / 类型 / 渠道 / 曝光 / 互动率），支持导出报表。' },
-      { id: 'FR-ANA-008', title: '门店活跃榜', desc: '门店排名与活跃度进度条。' },
-    ],
-    acceptance: '图表正确渲染；时间范围切换更新描述文案；表格与排行完整展示。',
-  },
+
   {
     id: 'knowledge',
     code: 'FR-KB',
@@ -244,14 +223,14 @@ const modules: Module[] = [
 
 const promptSpecs = [
   { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、虚假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
-  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正��字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
+  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正文字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
   { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、viral_keywords、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
   { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、viral_keywords、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
   { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', journey: '购买决策 / 交付分享 / 车主运营：以门店和顾问的可信关系推动咨询、到店、交付分享和售后复购。', vars: 'journey_stage、viral_keywords、scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。', prompt: '你是一线汽车销售顾问的朋友圈内容助手。请为{{journey_stage}}阶段生成{{persona}}口吻的{{scene}}图文，车型{{vehicle}}，活动事实{{offer}}，门店信息{{store_info}}，配图{{image_size}}。正文80–180字，低打扰并包含咨询 CTA；只返回包含 copy、images[]、hashtags[]、watermark[]、compliance 的 JSON。' },
 ]
 
 const nonFunctional = [
-  { k: '性能', v: '生成过程分阶段可��化��单条内容目标分钟级；交互即时响应。' },
+  { k: '性能', v: '生成过程分阶段可视化；单条内容目标分钟级；交互即时响应。' },
   { k: '可用性', v: '所有可点击元素具备点击反馈（按压 / 加载 / 成功态）。' },
   { k: '可访问性', v: '语义化 HTML、ARIA 标注、键盘可达（卡片 Enter/Space、弹层 Esc）。' },
   { k: '响应式', v: '采用设计系统断点与布局原语，移动端到宽屏自适应。' },
@@ -267,15 +246,16 @@ const metrics = [
   { k: '活跃门店数', v: 'COUNT(DISTINCT store_id)', calc: '统计期内有成功生成、下载、发布或登录事件', dir: '↑' },
   { k: '合规拦截率', v: 'blocked 校验数 / 全部校验数 × 100%', calc: '来源 compliance_checked；按时间范围聚合', dir: '稳定' },
   { k: '近 7 天生成趋势', v: '按日、内容类型 COUNT(DISTINCT task_id)', calc: '最近 7 个自然日；无数据日补 0；周环比对比前 7 日', dir: '图表' },
-  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容��� × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
+  { k: '渠道分发占比', v: '渠道发布内容数 / 全渠道发布内容数 × 100%', calc: '按 content_id 去重后按 channel 分组', dir: '图表' },
   { k: '互动率', v: '(点赞 + 评论 + 分享) / 曝光 × 100%', calc: '热门内容按曝光降序取 TOP 5；曝光为 0 显示 —', dir: '图表' },
   { k: '门店活跃度', v: '该店成功生成任务数 / TOP1 门店任务数 × 100%', calc: '门店榜按 COUNT(DISTINCT task_id) 降序', dir: '图表' },
 ]
 
 const implementationCards = [
+  { title: '统一工作流', body: '五大引擎均按 validate_input → create_task → prepare_context → compose_prompt → model_generate → parse_and_validate → compliance_check → persist_result 执行；节点状态可追踪、失败可从检查点恢复。' },
   { title: '任务状态机', body: 'draft → queued → running → succeeded / failed / canceled；进度 = completed_steps / total_steps × 100%，刷新后通过 task_id 恢复。' },
-  { title: '接口与幂等', body: '统一使用 /api/generations、/api/assets、/api/analytics、/api/knowledge/validate；写接口必须携带会话与 idempotencyKey。' },
-  { title: '数据与权限', body: 'generation_tasks、generation_outputs、assets、compliance_checks、analytics_events 五类核心数据；按 organization_id 隔离。' },
+  { title: '接口与幂等', body: '统一使用 /api/generations、/api/assets、/api/knowledge/validate；写接口必须携带会话与 idempotencyKey。' },
+  { title: '数据与权限', body: 'generation_tasks、generation_outputs、assets、compliance_checks 四类核心数据；按 organization_id 隔离。' },
   { title: '错误与重试', body: '统一返回 code、message、requestId、retryable；模型 5xx / 超时最多指数退避重试 2 次，参数、权限、合规错误不可重试。' },
   { title: '安全与验收', body: '上传白名单与大小校验由服务端执行，使用私有对象存储短期签名 URL；必须覆盖权限、重试、上传安全和主路径 E2E。' },
 ]
@@ -284,7 +264,6 @@ const implementationRows = [
   ['生成提交', 'POST /api/generations', 'engine、input、idempotencyKey', 'taskId + queued；重复幂等键返回同一任务'],
   ['任务查询', 'GET /api/generations/:taskId', 'taskId', 'status、progress、stage、outputs、error'],
   ['资产下载', 'POST /api/assets/:id/download', 'format、ratio', '5 分钟过期 downloadUrl；需重新鉴权'],
-  ['数据分析', 'GET /api/analytics', 'range、timezone、筛选项', 'KPI、趋势、渠道、引擎、榜单'],
   ['合规校验', 'POST /api/knowledge/validate', 'content', 'score、passed、counts、findings'],
 ]
 
@@ -311,17 +290,15 @@ const engineFlows: { id: string; title: string; icon: LucideIcon; steps: FlowSte
   },
   {
     id: 'flow-txt',
-    title: 'AI 图文生成（FR-TXT，含 SEO 优化）',
+    title: 'AI 图文生成（FR-TXT）',
     icon: FileText,
     steps: [
       { label: '输入参数', note: 'topic / platform / tone / length / keywords / brand_facts' },
       { label: '选题来源分支', note: '智能推荐（可刷新重推、点击回填标题）或用户手动输入标题' },
       { label: '组装 Prompt B 并调用文本模型', note: '生成 title / body / tags / coverSuggestions' },
-      { label: '校验字数', note: 'wordCount 与正文实际字符误差 ≤5%', decision: { pass: '进入 SEO 评分', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
-      { label: 'SEO 规则引擎评分', note: '关键词覆盖/密度 · 标题质量 · 可读性 · 结构 · 事实匹配 · CTA · 平台适配' },
-      { label: 'blocker 判定', note: '是否存在严重级问题', decision: { pass: '进入合规校验', fail: '返回 issues[]，不可标记"SEO 优化完成"' } },
-      { label: '合规知识库校验', note: '通过后落库正文+大纲', decision: { pass: '落库，大纲可拖拽排序', fail: 'COMPLIANCE_BLOCKED' } },
-      { label: '前端交互', note: '一键复制 / 平台格式转换 / 长尾关键词复制' },
+      { label: '校验字数', note: 'wordCount 与正文实际字符误差 ≤5%', decision: { pass: '进入合规校验', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
+      { label: '合规知识库校验', note: '通过后落库正文+大纲', decision: { pass: '落库，进入图文预览', fail: 'COMPLIANCE_BLOCKED' } },
+      { label: '前端交互', note: '图文混排预览 / 一键复制 / 长尾关键词复制' },
     ],
   },
   {
@@ -364,13 +341,13 @@ const engineFlows: { id: string; title: string; icon: LucideIcon; steps: FlowSte
       { label: '合规知识库校验', note: '库存 / 价格 / 客户案例 / 联系方式来源核验', decision: { pass: '校验水印一致性', fail: 'COMPLIANCE_BLOCKED，不生成可发布文案' } },
       { label: '校验水印一致性', note: '输出 watermark 与用户勾选项匹配', decision: { pass: '落库文案+配图建议', fail: '标记异常，禁止自行追加二维码/电话/Logo' } },
       { label: '前端渲染', note: '按 image_size 渲染手机朋友圈预览' },
-      { label: '用户操作', note: '复制文案（已复制反馈）/ 发送到微信（发送中→已发送）' },
+      { label: '用户操作', note: '复制文案（已复制反馈）/ 点赞交互（红心 + 计数）' },
     ],
   },
 ]
 
 const roadmap = [
-  { v: 'v1.0（当前基线）', d: '五大生成引擎 + 素材资产 + 数据分析 + 合规知识库，全部支持点击反馈与生成过程可视化。' },
+  { v: 'v2.0（当前基线）', d: '五大生成引擎 + 素材资产 + 合规知识库，支持点击反馈与生成过程可视化。' },
   { v: 'v1.1（规划）', d: '素材详情的分享 / 重命名 / 删除落地真实逻辑；模板库独立页面。' },
   { v: 'v1.2（规划）', d: '视频变体 / 多平台 A/B 重新评估引入；批量生成与任务队列。' },
   { v: 'v2.0（远期）', d: '多角色协作与审批流；私域获客数据回流与 ROI 归因。' },
@@ -379,19 +356,19 @@ const roadmap = [
 const risks = [
   { k: '生成模型质量', v: '质量依赖底层模型', a: '多模型 + 采纳率反馈优化' },
   { k: '合规知识库时效', v: '广告法 / 平台规则更新频繁', a: '实时同步 + 专家维护' },
-  { k: '多平台规则差异', v: '各平台格式与限制不同', a: '平台格式转换 + 站内线索组件' },
-  { k: '数据准确性', v: '指标依赖埋点与回流', a: '统一埋点规范��数据校验' },
+  { k: '多平台规则差异', v: '各平台格式与限制不同', a: '按平台注入 Prompt 约束 + 站内线索组件' },
+  { k: '数据准确性', v: '指标依赖埋点与回流', a: '统一埋点规范 + 数据校验' },
 ]
 
 const toc = [
   { id: 'overview', label: '1. 文档概述', icon: ScrollText },
-  { id: 'architecture', label: '2. 产品���体架构', icon: Layers },
+  { id: 'architecture', label: '2. 产品总体架构', icon: Layers },
   ...modules.map((m, i) => ({ id: m.id, label: `3.${i + 1} ${m.title}`, icon: m.icon })),
   { id: 'prompt-specs', label: '3.10 提示词规范', icon: Sparkles },
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
   { id: 'metrics', label: '5. 数据指标', icon: Target },
   { id: 'implementation', label: '6. 研发实现规格', icon: ServerCog },
-  { id: 'engine-flows', label: '6.9 引擎实现流程图', icon: Workflow },
+  { id: 'engine-flows', label: '6.9 五大引擎工作流', icon: Workflow },
   { id: 'roadmap', label: '7. 迭代规划', icon: GitBranch },
   { id: 'risks', label: '8. 风险与依赖', icon: AlertTriangle },
   ]
@@ -623,7 +600,7 @@ export default function PrdPage() {
               ))}
             </div>
             <div className="mt-3 rounded-lg border border-border bg-secondary/20 p-4 text-xs leading-relaxed text-muted-foreground">
-              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中���返回明确错误码；同一版本下输出字段稳定。
+              <span className="font-semibold text-foreground">提示词验收：</span>固定输入可复现结构化 JSON；缺少必填变量、非法枚举、事实资料缺失、模型解析失败和合规命中时返回明确错误码；同一版本下输出字段稳定。
             </div>
           </Section>
 
@@ -715,8 +692,8 @@ export default function PrdPage() {
               <p className="text-sm font-medium">统一流水线</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组装 Prompt →
-                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
-                → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该流水线与 6.2 状态机、6.6 错误码，
+创建 workflowRunId → 节点状态 pending/running/succeeded/failed → 调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
+            → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该可恢复流水线与 6.2 状态机、6.6 错误码，
                 差异仅在下方各引擎的专属校验与后处理节点。
               </p>
             </Card>

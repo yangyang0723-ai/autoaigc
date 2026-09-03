@@ -15,7 +15,6 @@ import {
   Wand2,
   Copy,
   ListTree,
-  Gauge,
   Loader2,
   CheckCircle2,
   PenLine,
@@ -47,22 +46,8 @@ const genSteps = [
   { icon: ListTree, label: '生成内容大纲', desc: '构建六段式文章结构' },
   { icon: PenLine, label: 'AI 正文撰写', desc: '逐段生成专业图文内容' },
   { icon: ImageIcon, label: '智能配图匹配', desc: '从素材库匹配场景图' },
-  { icon: Gauge, label: 'SEO 优化排版', desc: '关键词密度与可读性调优' },
 ]
 
-function SeoBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-1 flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium">{value}</span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
-      </div>
-    </div>
-  )
-}
 
 export default function TextPage() {
   const [type, setType] = useState(contentTypes[0])
@@ -193,49 +178,6 @@ export default function TextPage() {
           <p className="mt-2 text-right text-[10px] text-muted-foreground">{manualTitle.length}/80</p>
         </Card>
 
-        <Card className="p-5">
-          <p className="mb-2 text-xs font-semibold">内容类型</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {contentTypes.map((c) => (
-              <Chip key={c} active={type === c} onClick={() => setType(c)}>
-                {c}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">写作风格</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {writeStyles.map((s) => (
-              <Chip key={s} active={style === s} onClick={() => setStyle(s)}>
-                {s}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">语气</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {tones.map((t) => (
-              <Chip key={t} active={tone === t} onClick={() => setTone(t)}>
-                {t}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">字数控制</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {lengths.map((l) => (
-              <Chip key={l} active={length === l} onClick={() => setLength(l)}>
-                {l}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">配图尺寸</p>
-          <div className="flex flex-wrap gap-2">
-            {imageSizes.map((s) => (
-              <Chip key={s.label} active={imageSize.label === s.label} onClick={() => setImageSize(s)}>
-                {s.label}
-              </Chip>
-            ))}
-          </div>
-        </Card>
-
         <Button className="h-11 gap-2" onClick={generate} disabled={status === 'generating'}>
           {status === 'generating' ? (
             <>
@@ -257,13 +199,13 @@ export default function TextPage() {
           <GenerationProcess step={step} />
         ) : (
         <>
-        {/* Article preview + SEO */}
-        <div className="grid gap-4 xl:grid-cols-[1fr_280px]">
+        {/* Article preview + platform adaptation */}
+        <div className="grid gap-4">
           <Card className="overflow-hidden p-0">
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <FileText className="size-4 text-primary" />
-                ��文预览
+                正文预览
               </div>
               <Button
                 variant="outline"
@@ -301,7 +243,7 @@ export default function TextPage() {
               <p className="text-xs text-primary">图 1 · 星海 SUV 外观科技美学</p>
               <h3 className="text-base font-semibold">外观设计：科技美学的极致表达</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                贯穿式日间行车灯配合封闭式前脸，风阻���数低至 0.23Cd。车身长度 4980mm，轴距
+                贯穿式日间行车灯配合封闭式前脸，风阻系数低至 0.23Cd。车身长度 4980mm，轴距
                 2950mm，为后排腿部空间打下扎实基础。
                 <span className="rounded bg-primary/15 px-1 text-primary">
                   （数据来源：车型数据库 · FR-TXT-003 专业知识注入）
@@ -315,28 +257,6 @@ export default function TextPage() {
           </Card>
 
           <div className="flex flex-col gap-4">
-            <Card className="p-5">
-              <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Gauge className="size-4 text-primary" />
-                SEO 优化（FR-TXT-005）
-              </div>
-              <div className="space-y-3">
-                <SeoBar label="关键词密度" value={72} />
-                <SeoBar label="标题吸引力" value={88} />
-                <SeoBar label="可读性评分" value={81} />
-              </div>
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold">长尾关键词建议</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {['星海SUV怎么样', '25万新能源SUV', '智能座舱对比', '0首付购车'].map((keyword) => (
-                    <span key={keyword} className="rounded-md border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
             <Card className="p-5">
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <Layers className="size-4 text-primary" />
@@ -493,24 +413,7 @@ function GenerationProcess({ step }: { step: number }) {
         })}
       </div>
 
-      {/* Streaming skeleton preview */}
-      <div className="space-y-3 border-t border-border p-5">
-        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <PenLine className="size-3.5 text-primary" />
-          实时渲染预览
-        </div>
-        <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-        <div className="space-y-2">
-          <div className="h-3 w-full animate-pulse rounded bg-muted" />
-          <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
-        </div>
-        <div className="aspect-[16/9] w-full animate-pulse rounded-lg bg-muted" />
-        <div className="space-y-2">
-          <div className="h-3 w-full animate-pulse rounded bg-muted" />
-          <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
-        </div>
-      </div>
+
     </Card>
   )
 }
