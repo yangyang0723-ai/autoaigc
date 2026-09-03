@@ -107,6 +107,9 @@
 - **FR-TXT-007 平台格式转换**：将正文转换为目标平台格式，带加载态与「已适配」反馈。
 - **FR-TXT-008 长尾关键词**：展示推荐长尾关键词，点击可复制，带反馈。
 - **FR-TXT-009 一键生成文案渲染过程**：触发生成后右侧展示分阶段生成过程（解析 → 撰写 → 配图 → 排版等），完成后呈现结果。
+- **FR-TXT-010 SEO 优化**：对标题、正文、关键词、结构和可读性进行规则化分析，输出评分、问题项和可执行修改建议；不以关键词堆砌替代内容质量。
+- **FR-TXT-011 智能选题推荐**：基于购车旅程、平台、车型事实和爆款关键词推荐选题，支持刷新重新推荐；推荐结果可回填为标题。
+- **FR-TXT-012 手动标题输入**：用户可在智能选题推荐下方直接输入标题，再选择平台、语气、字数和配图尺寸生成正文。
 
 **验收标准**
 - 大纲拖拽排序生效；复制 / 转换 / 关键词均有点击反馈；尺寸切换实时改变配图比例。
@@ -237,13 +240,13 @@
 - 模板变量使用 `{{variable}}`；缺失必填变量返回 `INVALID_INPUT`，不得生成猜测内容。枚举值必须来自引擎字段配置。
 - 所有生成结果先执行知识库合规校验；命中高风险规则返回 `COMPLIANCE_BLOCKED`，不写入可发布资产。
 - 模型输出按 JSON Schema 解析；解析失败自动重试 1 次，仍失败返回 `MODEL_OUTPUT_INVALID`，并记录 `requestId`。
-- 车型、价格、续航、优惠、金融政策等事实只允许来自业务参数，不得编造；缺少事实时要求补充或标记“以官方信息为准”。
+- 车型、价格、续航、优惠、金融政策等事实只允许来自业���参数，不得编造；缺少事实时要求补充或标记“以官方信息为准”。
 - 保存 `prompt_template_version`、模型版本和输出校验结果，便于复现与审计；不得记录完整敏感原文、密钥或签名 URL。
 
 ### 3.10.2 AI 图片生成 Prompt（`FR-IMG`）
 **系统角色**：你是汽车品牌视觉创意总监，负责生成真实、可商用的汽车营销视觉方案，优先保证车型外观一致、构图完整、品牌安全和指定画幅适配。
 
-**变量**：`{{prompt}}` 创�������描述、`{{style}}` 视觉风格、`{{scene}}` 场景、`{{vehicle}}` 车型、`{{ratio}}` 图片比例、`{{count}}` 数量、`{{reference_image}}` 参考图（可选）。
+**变量**：`{{prompt}}` 创���������描述、`{{style}}` 视觉风格、`{{scene}}` 场景、`{{vehicle}}` 车型、`{{ratio}}` 图片比例、`{{count}}` 数量、`{{reference_image}}` 参考图（可选）。
 
 **用户 Prompt 模板**：请为“{{vehicle}}”生成{{count}}张{{ratio}}汽车营销图。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车型车身比例、灯组、轮毂、车标和颜色一致；画面适合{{ratio}}裁切，主体清晰，光影自然，无畸变、无乱码文字、无虚假品牌 Logo、无竞品 Logo、无水印。营销文字仅返回建议文案，不直接绘制进图像。
 
@@ -302,11 +305,30 @@
 
 服务端将 `journey_stage`、`persona`、`channel`、`conversion_goal` 和 `brand_facts` 注入每套 Prompt；若阶段与内容类型不匹配，优先返回校验提示而不是自行猜测。五大引擎的输出需记录阶段字段，便于按旅程分析生成、采纳、线索和成交转化。
 
-### 3.10.7 爆款关键词策略
+### 3.10.7 AI 图文 SEO 优化规则（`FR-TXT-010`）
+SEO 优化服务在生成完成后执行，输入为标题、正文、平台、旅程阶段、车型事实和 `viral_keywords`，输出优化前后分数、问题明细、建议和可选修订稿。评分仅用于辅助编辑，不得暗示搜索排名或承诺曝光结果。
+
+| 检查项 | 规则与计算方式 | 通过标准 |
+| --- | --- | --- |
+| 关键词覆盖 | 核心词至少出现在标题或首段；场景/痛点词分布在正文前 30%；证据词必须与车型事实同段 | 核心词覆盖 100%，证据词均有 `evidence_id` |
+| 关键词密度 | `关键词有效出现次数 / 正文中文字符数 × 100%`，同义词合并计数，标题单独统计 | 建议 1%–3%；超过 3% 标记堆砌风险，不自动继续加词 |
+| 标题质量 | 标题长度、核心词前置、利益点清晰度、疑问/场景表达和禁用词分别评分 | 公众号 10–28 字；小红书 12–24 字；微博 8–20 字；知乎 15–30 字；无绝对化词 |
+| 首段吸引力 | 检查前 80 个中文字符是否包含用户场景/痛点和一个可验证利益点 | 同时命中场景词与利益点；不得使用虚假悬念 |
+| 内容结构 | 统计标题、导语、H2/H3 小标题、正文段落、列表、CTA 的完整性 | 移动端段落 40–120 字；每 300–500 字至少 1 个小标题或列表 |
+| 可读性 | `可读性评分 = 100 - 长句扣分 - 术语密度扣分 - 段落过长扣分 - 重复扣分`，最低 0 分 | ≥ 80 分；平均句长 ≤ 45 个中文字符；专业术语首次出现需解释 |
+| 事实与证据 | 将价格、配置、续航、油耗、金融、权益等断言与 `brand_facts` 逐条比对 | 事实匹配率 100%；无来源事实改为“待确认” |
+| CTA 转化 | 根据购车阶段检查 CTA：认知/考虑为了解车型，比较为获取对比，试驾为预约试驾，购买为咨询报价/到店 | 恰好 1 个主 CTA；包含门店/官方入口时必须来自输入资料 |
+| 平台适配 | 检查平台禁用词、段落格式、标签数量、标题长度和语气 | 平台规则全部通过；不得把同一版本原样复制到其他平台 |
+
+**SEO 输出字段**：`seo_score`（0–100）、`keyword_density`、`keyword_coverage`、`title_score`、`readability_score`、`fact_match_rate`、`issues[]`（规则、位置、严重级别、建议）、`used_keywords[]`、`rejected_keywords[]`、`revised_content`（可选）。严重级别为 `blocker/warning/suggestion`；存在 `blocker` 时禁止标记为“SEO 优化完成”。
+
+**汽车行业关键词示例**（仅作分类示例，实际使用必须经过知识库审核）：车型词“星海 SUV”；场景词“城市通勤、二胎出行、周末自驾”；痛点词“后排空间、停车难、续航焦虑”；证据词“智能座舱、辅助驾驶、快充”；比较词“同级配置、用车成本”；转化词“预约试驾、获取报价、到店咨询”。“最低价、全网第一、绝对安全、零首付”等词默认禁用，除非存在有效官方证明、适用条件和有效期。
+
+### 3.10.8 爆款关键词策略
 “爆款关键词”不是随机堆砌热词，而是同时满足用户搜索意图、购车决策价值、平台表达习惯和品牌事实可验证性的关键词组合。服务端新增 `viral_keywords` 参数，结构为：`{ primary[], scenario[], pain_point[], proof[], conversion[], forbidden[] }`。
 
 - **关键词来源优先级**：品牌/车型知识库与已审核卖点 > 平台搜索热词榜与历史高互动内容 > 运营人员补充词。每个词保存 `source`、`updated_at`、`evidence_id`、`risk_level` 和有效期；过期或无来源的词不得进入生成 Prompt。
-- **组合规则**：每次选择 1–2 个核心词、2–4 个场景/痛点词、1–2 个证据词和 1 个转化词；核心词必须出现在标题或首屏，痛点词进入前 30% 内容，证据词必须绑定具体事实，转化词只用于 CTA。
+- **组合规则**：每次选择 1–2 个核心词、2–4 个场景/痛点词、1–2 个证据词和 1 个转化词；核心词必须出现在标题或��屏，痛点词进入前 30% 内容，证据词必须绑定具体事实，转化词只用于 CTA。
 - **旅程匹配**：认知种草优先“车型名 + 场景/趋势”（如“城市通勤、智能座舱”）；兴趣考虑优先“家庭痛点 + 功能证据”（如“二胎出行、后排空间”）；车型比较优先“同级对比 + 购车指标”（如“油耗/续航、配置差异”）；试驾优先“真实体验 + 操作功能”；购买决策优先“官方权益 + 门店咨询”；交付/车主运营优先“提车分享、保养权益”。具体词必须以知识库事实为准。
 - **平台适配**：小红书偏“场景、体验、清单、攻略”；短视频偏“前三秒利益点、反差、实测、避坑”；公众号偏“深度解读、配置逻辑、购车指南”；朋友圈偏“门店、现车、试驾、权益、低打扰咨询”。不得跨平台原样复制关键词。
 - **频次与质量**：同一核心词默认 1 次，全文自然出现不超过 3 次；关键词覆盖率不超过正文字符数的 3%；图片文字禁止直接生成关键词；视频关键词须同步出现在口播或字幕；PPT关键词只用于标题、结论或图表标签。
@@ -320,7 +342,7 @@
 #### Prompt A：AI 图片生成
 ```text
 [system]
-你是汽车品牌视觉创意总监。请根据已确认的车型事实和创意要求，设计真实、清晰、可商用的汽车营销视觉。优先保证车型外观一致、主体完整、光影自然、品牌安全和画幅适配。你不能编造车型外观、品牌标志、性能数据或营销事实；不要在图片中生成任何文字。
+你是汽车品牌视觉创意总监。请根据已确认的车型事实和创意要求，设计真实、清晰、可商用的汽车营销视觉。优先保证车型外���一致、主体完整、光影自然、品牌安全和画幅适配。你不能编造车型外观、品牌标志、性能数据或营销事实；不要在图片中生成任何文字。
 
 [task]
 车型：{{vehicle}}
@@ -405,7 +427,7 @@
 #### Prompt E：朋友圈图文
 ```text
 [system]
-你是一线汽车销售顾问的朋友圈内容助手。请用真实、亲切、低打扰的口吻促成咨询。车型、活动、库存、价格、门店和联系方式只能来自输入资料；禁止虚构库存、价格、限时、客户案例、绝对化承诺或未经授权的联系方式。输出前执行合规检查，命中高风险规则时返回 COMPLIANCE_BLOCKED，不生成可发布文案。
+你是一线汽车销售顾问的朋友圈内容助手。请用真实、亲切、低打扰的口吻促成咨询。车型、活动、库存、价格、门店和联系方式只能来自输入资料；禁止虚构库存、价格、限时、客户案例、绝对化承诺或未经授权的联系方式。输出前执行合规检查，命中高风险规则时���回 COMPLIANCE_BLOCKED，不生成可发布文案。
 
 [task]
 场景：{{scene}}
@@ -541,10 +563,149 @@
 
 ### 6.7 研发验收清单
 - 断网、刷新、重复点击、重复提交、浏览器返回后，任务状态和结果不丢失、不重复扣配额。
-- 所有按钮区分 loading、success、error、disabled；未实现能力不显示假成功反馈。
+- 所有按钮区分 loading、success、error、disabled；未实现能力不显示假成功反馈；
 - 任意接口无法通过修改请求体访问其他组织或门店数据；资产下载链接过期后必须重新鉴权。
 - 统计结果可用明细事件复算；空数据按“—”处理；所有时间按 Asia/Shanghai 展示并以 UTC 存储。
 - 关键流程覆盖单元测试、接口测试、权限测试、任务重试测试、上传安全测试和主路径 E2E 测试。
+
+### 6.8 服务端模块划分（可直接落地的目录结构）
+```text
+/app/api/generations/route.ts              # POST 创建任务：校验入参 → 写 generation_tasks(queued) → 入队
+/app/api/generations/[taskId]/route.ts      # GET 任务状态；SSE 推送 progress/stage
+/app/api/generations/[taskId]/cancel/route.ts
+/lib/engines/
+  ├─ image.engine.ts     # buildPrompt / callModel / validateOutput / postProcess
+  ├─ text.engine.ts      # 含 seo.ts（SEO 规则引擎）、keywords.ts（爆款关键词选取）
+  ├─ video.engine.ts     # storyboard 时长核验、字幕对齐
+  ├─ ppt.engine.ts       # 大纲编排、图表数据校验
+  └─ moments.engine.ts   # 水印/二维码匹配、合规润色
+/lib/pipeline/
+  ├─ validateInput.ts     # 枚举/必填校验 → INVALID_INPUT
+  ├─ injectContext.ts     # 注入 journey_stage、persona、brand_facts、viral_keywords
+  ├─ assemblePrompt.ts    # system_prompt + user_prompt + output_schema 拼接
+  ├─ invokeModel.ts       # 模型调用 + 指数退避重试（最多 2 次）
+  ├─ parseOutput.ts       # JSON Schema 解析，失败重试 1 次 → MODEL_OUTPUT_INVALID
+  ├─ complianceGate.ts    # 调用 /api/knowledge/validate → COMPLIANCE_BLOCKED 分支
+  └─ persistOutput.ts     # 写 generation_outputs / assets，任务置为 succeeded
+/lib/skills/*.ts          # 现有的引擎字段配置（枚举、默认值），前端与服务端共享同一份定义
+```
+每个引擎的 `*.engine.ts` 只实现 `buildPrompt`（组装 3.10 节模板变量）、`postProcess`（引擎专属校验，如图文 SEO 评分、视频分镜时长核对）；其余步骤全部复用 `/lib/pipeline` 中的通用函数，保证五大引擎状态机、错误码和合规校验完全一致。
+
+### 6.9 五大生成引擎实现逻辑流程图
+统一底层流水线相同（对应 6.2 状态机 + 6.8 模块划分），差异仅在“引擎专属处理”节点。每张图的失败分支均需返回 6.6 定义的标准错误码，任务最终态写回 `generation_tasks`。
+
+#### 6.9.1 通用流水线（五大引擎共用）
+```mermaid
+flowchart TD
+  A[前端提交参数 POST /api/generations] --> B{参数与枚举校验}
+  B -- 失败 --> B1[400 INVALID_INPUT]
+  B -- 通过 --> C{幂等键 + 配额检查}
+  C -- 重复/超额 --> C1[409 DUPLICATE_REQUEST / 429 RATE_LIMITED]
+  C -- 通过 --> D[创建任务 status=queued]
+  D --> E[Worker 领取任务 status=running]
+  E --> F[注入上下文: journey_stage · persona · brand_facts · viral_keywords]
+  F --> G[组装 Prompt: system_prompt + user_prompt + output_schema]
+  G --> H[调用模型 invokeModel]
+  H -- 5xx/超时 --> H1[指数退避重试 ≤2 次]
+  H1 -- 仍失败 --> H2[status=failed 记录 error_code]
+  H -- 成功 --> I{JSON Schema 解析}
+  I -- 失败 --> I1[重试 1 次]
+  I1 -- 仍失败 --> I2[MODEL_OUTPUT_INVALID → status=failed]
+  I -- 成功 --> J[引擎专属后处理 postProcess]
+  J --> K{合规知识库三重校验}
+  K -- 命中高风险 --> K1[COMPLIANCE_BLOCKED，不写入可发布资产]
+  K -- 通过 --> L[落库 generation_outputs + assets]
+  L --> M[status=succeeded，SSE/轮询推送前端]
+  M --> N[用户下载/发布 → status=exported]
+```
+
+#### 6.9.2 AI 图片生成（`FR-IMG`）
+```mermaid
+flowchart TD
+  A[输入: prompt/style/scene/vehicle/ratio/count] --> B[通用校验+配额]
+  B --> C[注入车型知识库事实 + viral_keywords]
+  C --> D[组装 Prompt A]
+  D --> E[调用图像模型，按 ratio 生成 count 张]
+  E --> F{输出宽高比=ratio 且数量=count}
+  F -- 不满足 --> F1[MODEL_OUTPUT_INVALID 重试1次]
+  F -- 满足 --> G[画质/品牌安全检测: 无乱码/无竞品Logo/无水印]
+  G --> H[合规校验]
+  H --> I[落库 4 张候选图 + revisedPrompt]
+  I --> J[前端网格展示，用户选中 1 张]
+  J --> K[按导出比例条一键导出]
+```
+
+#### 6.9.3 AI 图文生成（`FR-TXT`，含 SEO 优化子流程）
+```mermaid
+flowchart TD
+  A[输入: topic/platform/tone/length/keywords/brand_facts] --> B[通用校验+配额]
+  B --> C{选题来源}
+  C -- 智能推荐 --> C1[按 journey_stage+平台+爆款关键词推荐选题]
+  C1 --> C2[用户点击刷新→重新推荐 / 点击选题→回填标题]
+  C -- 手动输入 --> C3[用户直接输入标题，跳过推荐]
+  C2 --> D[组装 Prompt B]
+  C3 --> D
+  D --> E[调用文本模型，生成 title/body/tags/coverSuggestions]
+  E --> F{wordCount 误差 ≤5%}
+  F -- 不满足 --> F1[重试1次→仍失败 MODEL_OUTPUT_INVALID]
+  F -- 满足 --> G[SEO 规则引擎评分]
+  G --> G1[关键词覆盖/密度 · 标题质量 · 可读性 · 结构 · 事实匹配 · CTA · 平台适配]
+  G1 --> H{是否存在 blocker 级问题}
+  H -- 是 --> H1[标记未通过，返回 issues[] 供修改，不判定"SEO优化完成"]
+  H -- 否 --> I[合规知识库校验]
+  I --> J[落库正文+大纲，前端可拖拽调整大纲顺序]
+  J --> K[一键复制 / 平台格式转换 / 长尾关键词复制]
+```
+
+#### 6.9.4 AI 视频生成（`FR-VID`）
+```mermaid
+flowchart TD
+  A[输入: topic/digital_human/voice/video_type/video_size/duration_sec/vehicle_facts] --> B[通用校验+配额]
+  B --> C[注入 journey_stage + viral_keywords]
+  C --> D[组装 Prompt C]
+  D --> E[调用视频脚本模型，生成 storyboard[] + captions[]]
+  E --> F{Σ storyboard.durationSec = duration_sec}
+  F -- 不满足 --> F1[MODEL_OUTPUT_INVALID 重试1次]
+  F -- 满足 --> G{字幕与口播逐句对应}
+  G -- 不满足 --> G1[标记待修复，不进入合成]
+  G -- 满足 --> H[数字人驱动+配音合成+字幕烧录+卡点合成]
+  H --> I[合规校验：性能/价格/续航/背书均来自 vehicle_facts]
+  I --> J[落库 videoUrl/coverUrl，写 generation_outputs]
+  J --> K[前端渲染分镜时间轴，可切换镜头预览]
+  K --> L[直播回放上传 → 独立切片子流程，产出 N 条切片资产]
+```
+
+#### 6.9.5 AI PPT 生成（`FR-PPT`）
+```mermaid
+flowchart TD
+  A[输入: topic/scene/template/pages/audience/data] --> B[通用校验+配额]
+  B --> C[组装 Prompt D]
+  C --> D[调用模型，生成 slides[]（每页 title/bullets/chart/notes）]
+  D --> E{slides.length = pages}
+  E -- 不满足 --> E1[MODEL_OUTPUT_INVALID 重试1次]
+  E -- 满足 --> F{图表数据口径/单位/来源齐全}
+  F -- 缺失 --> F1[标记"待补充"，不得伪造数值]
+  F -- 齐全 --> G[合规校验]
+  G --> H[落库 slides + notes，套用视觉模板]
+  H --> I[前端缩略图翻页 / 演示模式 / 图表推荐插入]
+  I --> J[导出 PPTX/PDF：生成文件→签名下载URL→exported]
+```
+
+#### 6.9.6 朋友圈图文（`FR-MOM`）
+```mermaid
+flowchart TD
+  A[输入: scene/persona/image_size/watermark/vehicle/offer/store_info] --> B[通用校验+配额]
+  B --> C[组装 Prompt E]
+  C --> D[调用模型，生成 copy/images/hashtags/watermark]
+  D --> E{copy 长度 80–180 字 且 hashtags 3–5 个}
+  E -- 不满足 --> E1[MODEL_OUTPUT_INVALID 重试1次]
+  E -- 满足 --> F[合规知识库校验：库存/价格/客户案例/联系方式来源核验]
+  F -- 命中高风险 --> F1[COMPLIANCE_BLOCKED，返回 compliance.findings]
+  F -- 通过 --> G{watermark 输出与用户勾选一致}
+  G -- 不一致 --> G1[标记异常，禁止自行追加二维码/电话/Logo]
+  G -- 一致 --> H[落库文案+配图建议，按 image_size 渲染手机预览]
+  H --> I[复制文案 / 发送到微信（发送中→已发送）]
+```
 
 ## 7. 迭代规划
 

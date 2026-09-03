@@ -19,6 +19,10 @@ import {
   AlertTriangle,
   ServerCog,
   Sparkles,
+  Workflow,
+  ArrowDown,
+  CheckCircle2,
+  XCircle,
   type LucideIcon,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -115,8 +119,11 @@ const modules: Module[] = [
       { id: 'FR-TXT-007', title: '平台格式转换', desc: '转换为目标平台格式，带加载态与「已适配」反馈。' },
       { id: 'FR-TXT-008', title: '长尾关键词', desc: '展示推荐长尾关键词，点击可复制，带反馈。' },
       { id: 'FR-TXT-009', title: '生成过程渲染', desc: '触发后右侧分阶段展示生成过程，完成后呈现结果。' },
+      { id: 'FR-TXT-010', title: 'SEO 优化规则', desc: '检查关键词覆盖、密度、标题质量、可读性、事实来源、CTA 与平台适配，输出评分和问题建议。' },
+      { id: 'FR-TXT-011', title: '智能选题推荐', desc: '基于购车旅程、平台、车型事实和爆款关键词推荐选题，支持刷新并回填标题。' },
+      { id: 'FR-TXT-012', title: '手动标题输入', desc: '用户可输入自定义标题，再选择平台、语气、字数和配图尺寸生成正文。' },
     ],
-    acceptance: '大纲拖拽排序生效；复制 / 转换 / 关键词均有反馈；尺寸切换实时改变配图比例。',
+    acceptance: '复制 / 转换 / 关键词均有反馈；SEO 评分与问题项可解释；关键词密度 1%–3%；事实匹配率 100%；尺寸切换实时改变配图比例。',
   },
   {
     id: 'video',
@@ -142,14 +149,14 @@ const modules: Module[] = [
     code: 'FR-PPT',
     route: '/ppt',
     title: 'AI PPT 生成',
-    desc: '生成发布会、培训、汇报类演示文稿。',
+    desc: '生成发布��、培训、汇报类演示文稿。',
     icon: Presentation,
     frs: [
       { id: 'FR-PPT-001', title: '主题与场景选择', desc: '选择汇报场景与主题。' },
       { id: 'FR-PPT-002', title: '模板选择', desc: '选择行业视觉模板（Chip 单选）。' },
       { id: 'FR-PPT-003', title: '大纲编排', desc: '生成分页大纲结构。' },
       { id: 'FR-PPT-004', title: '幻灯片预览与翻页', desc: '主预览按页展示，支持缩略图翻页切换。' },
-      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲�������注。' },
+      { id: 'FR-PPT-005', title: '演讲者备注', desc: '为当前页生成演讲���������注。' },
       { id: 'FR-PPT-006', title: '数据可视化图表', desc: '销量趋势 / 市场份额 / 客户画像 / 漏斗转化，点击推荐并插入当前页。' },
       { id: 'FR-PPT-007', title: '演示模式', desc: '进入 / 退出演示态，画布显示「演示中」标记。' },
       { id: 'FR-PPT-008', title: '导出', desc: '导出 PPTX / PDF，带加载态与「已导出」反馈。' },
@@ -237,7 +244,7 @@ const modules: Module[] = [
 
 const promptSpecs = [
   { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、虚假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
-  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正文字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
+  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正��字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
   { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、viral_keywords、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
   { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、viral_keywords、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
   { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', journey: '购买决策 / 交付分享 / 车主运营：以门店和顾问的可信关系推动咨询、到店、交付分享和售后复购。', vars: 'journey_stage、viral_keywords、scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。', prompt: '你是一线汽车销售顾问的朋友圈内容助手。请为{{journey_stage}}阶段生成{{persona}}口吻的{{scene}}图文，车型{{vehicle}}，活动事实{{offer}}，门店信息{{store_info}}，配图{{image_size}}。正文80–180字，低打扰并包含咨询 CTA；只返回包含 copy、images[]、hashtags[]、watermark[]、compliance 的 JSON。' },
@@ -281,6 +288,87 @@ const implementationRows = [
   ['合规校验', 'POST /api/knowledge/validate', 'content', 'score、passed、counts、findings'],
 ]
 
+type FlowStep = {
+  label: string
+  note: string
+  decision?: { pass: string; fail: string }
+}
+
+const engineFlows: { id: string; title: string; icon: LucideIcon; steps: FlowStep[] }[] = [
+  {
+    id: 'flow-img',
+    title: 'AI 图片生成（FR-IMG）',
+    icon: ImageIcon,
+    steps: [
+      { label: '输入参数', note: 'prompt / style / scene / vehicle / ratio / count', decision: { pass: '创建任务 queued', fail: '400 INVALID_INPUT' } },
+      { label: '注入上下文', note: '车型知识库事实 + viral_keywords（核心/场景/证据词）' },
+      { label: '组装 Prompt A 并调用图像模型', note: '按 ratio 生成 count 张候选图' },
+      { label: '校验输出', note: '宽高比=ratio 且数量=count', decision: { pass: '进入品牌安全检测', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
+      { label: '品牌安全检测', note: '无乱码 / 无竞品 Logo / 无水印 / 无畸变' },
+      { label: '合规知识库校验', note: '三重校验：平台规则 / 敏感词 / 行业规范', decision: { pass: '落库 4 张候选图 + revisedPrompt', fail: 'COMPLIANCE_BLOCKED' } },
+      { label: '前端网格展示', note: '用户选中 1 张 → 按导出比例条一键导出' },
+    ],
+  },
+  {
+    id: 'flow-txt',
+    title: 'AI 图文生成（FR-TXT，含 SEO 优化）',
+    icon: FileText,
+    steps: [
+      { label: '输入参数', note: 'topic / platform / tone / length / keywords / brand_facts' },
+      { label: '选题来源分支', note: '智能推荐（可刷新重推、点击回填标题）或用户手动输入标题' },
+      { label: '组装 Prompt B 并调用文本模型', note: '生成 title / body / tags / coverSuggestions' },
+      { label: '校验字数', note: 'wordCount 与正文实际字符误差 ≤5%', decision: { pass: '进入 SEO 评分', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
+      { label: 'SEO 规则引擎评分', note: '关键词覆盖/密度 · 标题质量 · 可读性 · 结构 · 事实匹配 · CTA · 平台适配' },
+      { label: 'blocker 判定', note: '是否存在严重级问题', decision: { pass: '进入合规校验', fail: '返回 issues[]，不可标记"SEO 优化完成"' } },
+      { label: '合规知识库校验', note: '通过后落库正文+大纲', decision: { pass: '落库，大纲可拖拽排序', fail: 'COMPLIANCE_BLOCKED' } },
+      { label: '前端交互', note: '一键复制 / 平台格式转换 / 长尾关键词复制' },
+    ],
+  },
+  {
+    id: 'flow-vid',
+    title: 'AI 视频生成（FR-VID）',
+    icon: Clapperboard,
+    steps: [
+      { label: '输入参数', note: 'topic / digital_human / voice / video_type / video_size / duration_sec / vehicle_facts' },
+      { label: '组装 Prompt C 并调用模型', note: '生成 storyboard[] + captions[]' },
+      { label: '校验分镜总时长', note: 'Σ storyboard.durationSec = duration_sec', decision: { pass: '校验字幕对应关系', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
+      { label: '校验字幕与口播', note: '逐句对应、安全区内', decision: { pass: '进入合成阶段', fail: '标记待修复，不进入合成' } },
+      { label: '合成阶段', note: '数字人驱动 + AI 配音 + 字幕烧录 + 智能卡点合成' },
+      { label: '合规知识库校验', note: '性能/价格/续航/背书均须来自 vehicle_facts', decision: { pass: '落库 videoUrl / coverUrl', fail: 'COMPLIANCE_BLOCKED' } },
+      { label: '前端渲染', note: '智能分镜时间轴，可切换镜头预览' },
+      { label: '直播切片子流程', note: '上传直播回放 → 自动解析高光时刻 → 产出 N 条切片资产' },
+    ],
+  },
+  {
+    id: 'flow-ppt',
+    title: 'AI PPT 生成（FR-PPT）',
+    icon: Presentation,
+    steps: [
+      { label: '输入参数', note: 'topic / scene / template / pages / audience / data' },
+      { label: '组装 Prompt D 并调用模型', note: '生成 slides[]（每页 title / bullets / chart / notes）' },
+      { label: '校验页数', note: 'slides.length = pages', decision: { pass: '校验图表数据', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
+      { label: '校验图表数据', note: '口径 / 单位 / 时间范围 / 来源齐全', decision: { pass: '进入合规校验', fail: '标记"待补充"，不得伪造数值' } },
+      { label: '合规知识库校验', note: '通过后落库 slides + notes，套用视觉模板' },
+      { label: '前端交互', note: '缩略图翻页 / 演示模式 / 图表类型推荐插入当前页' },
+      { label: '导出', note: 'PPTX / PDF：生成文件 → 签名下载 URL → status=exported' },
+    ],
+  },
+  {
+    id: 'flow-mom',
+    title: '朋友圈图文（FR-MOM）',
+    icon: MessageCircle,
+    steps: [
+      { label: '输入参数', note: 'scene / persona / image_size / watermark / vehicle / offer / store_info' },
+      { label: '组装 Prompt E 并调用模型', note: '生成 copy / images / hashtags / watermark' },
+      { label: '校验输出', note: 'copy 长度 80–180 字，hashtags 3–5 个', decision: { pass: '进入合规校验', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
+      { label: '合规知识库校验', note: '库存 / 价格 / 客户案例 / 联系方式来源核验', decision: { pass: '校验水印一致性', fail: 'COMPLIANCE_BLOCKED，不生成可发布文案' } },
+      { label: '校验水印一致性', note: '输出 watermark 与用户勾选项匹配', decision: { pass: '落库文案+配图建议', fail: '标记异常，禁止自行追加二维码/电话/Logo' } },
+      { label: '前端渲染', note: '按 image_size 渲染手机朋友圈预览' },
+      { label: '用户操作', note: '复制文案（已复制反馈）/ 发送到微信（发送中→已发送）' },
+    ],
+  },
+]
+
 const roadmap = [
   { v: 'v1.0（当前基线）', d: '五大生成引擎 + 素材资产 + 数据分析 + 合规知识库，全部支持点击反馈与生成过程可视化。' },
   { v: 'v1.1（规划）', d: '素材详情的分享 / 重命名 / 删除落地真实逻辑；模板库独立页面。' },
@@ -292,7 +380,7 @@ const risks = [
   { k: '生成模型质量', v: '质量依赖底层模型', a: '多模型 + 采纳率反馈优化' },
   { k: '合规知识库时效', v: '广告法 / 平台规则更新频繁', a: '实时同步 + 专家维护' },
   { k: '多平台规则差异', v: '各平台格式与限制不同', a: '平台格式转换 + 站内线索组件' },
-  { k: '数据准确性', v: '指标依赖埋点与回流', a: '统一埋点规范与数据校验' },
+  { k: '数据准确性', v: '指标依赖埋点与回流', a: '统一埋点规范��数据校验' },
 ]
 
 const toc = [
@@ -303,9 +391,10 @@ const toc = [
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
   { id: 'metrics', label: '5. 数据指标', icon: Target },
   { id: 'implementation', label: '6. 研发实现规格', icon: ServerCog },
+  { id: 'engine-flows', label: '6.9 引擎实现流程图', icon: Workflow },
   { id: 'roadmap', label: '7. 迭代规划', icon: GitBranch },
   { id: 'risks', label: '8. 风险与依赖', icon: AlertTriangle },
-]
+  ]
 
 function useActiveSection(ids: string[]) {
   const [active, setActive] = useState(ids[0])
@@ -620,6 +709,24 @@ export default function PrdPage() {
             </div>
           </Section>
 
+          {/* 6.9 Engine implementation flow diagrams */}
+          <Section id="engine-flows" title="6.9 五大生成引擎实现逻辑流程图" icon={Workflow}>
+            <Card className="mb-4 border-primary/25 bg-primary/[0.04] p-4">
+              <p className="text-sm font-medium">统一流水线</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组装 Prompt →
+                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
+                → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该流水线与 6.2 状态机、6.6 错误码，
+                差异仅在下方各引擎的专属校验与后处理节点。
+              </p>
+            </Card>
+            <div className="space-y-4">
+              {engineFlows.map((flow) => (
+                <FlowDiagram key={flow.id} title={flow.title} icon={flow.icon} steps={flow.steps} />
+              ))}
+            </div>
+          </Section>
+
           {/* 7. Roadmap */}
           <Section id="roadmap" title="7. 迭代规划">
             <div className="space-y-3">
@@ -659,6 +766,53 @@ export default function PrdPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function FlowDiagram({
+  title,
+  icon: Icon,
+  steps,
+}: {
+  title: string
+  icon: LucideIcon
+  steps: FlowStep[]
+}) {
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="flex items-center gap-2 border-b border-border bg-secondary/20 px-4 py-3">
+        <Icon className="size-4 text-primary" />
+        <p className="text-sm font-semibold">{title}</p>
+      </div>
+      <div className="flex flex-col items-stretch gap-0 p-4">
+        {steps.map((s, i) => (
+          <div key={s.label} className="flex flex-col items-center">
+            <div className="w-full rounded-lg border border-border bg-secondary/20 p-3">
+              <p className="text-sm font-medium">
+                <span className="mr-2 inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
+                  {i + 1}
+                </span>
+                {s.label}
+              </p>
+              <p className="mt-1 pl-7 text-xs leading-relaxed text-muted-foreground">{s.note}</p>
+              {s.decision && (
+                <div className="mt-2 grid gap-1.5 pl-7 sm:grid-cols-2">
+                  <div className="flex items-start gap-1.5 rounded-md border border-emerald-500/25 bg-emerald-500/[0.06] px-2 py-1.5">
+                    <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-emerald-500" />
+                    <p className="text-[11px] leading-relaxed text-muted-foreground">{s.decision.pass}</p>
+                  </div>
+                  <div className="flex items-start gap-1.5 rounded-md border border-red-500/25 bg-red-500/[0.06] px-2 py-1.5">
+                    <XCircle className="mt-0.5 size-3 shrink-0 text-red-500" />
+                    <p className="text-[11px] leading-relaxed text-muted-foreground">{s.decision.fail}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            {i < steps.length - 1 && <ArrowDown className="my-1 size-4 shrink-0 text-muted-foreground/50" />}
+          </div>
+        ))}
+      </div>
+    </Card>
   )
 }
 
