@@ -10,7 +10,6 @@ import {
   Presentation,
   MessageCircle,
   FolderKanban,
-  BarChart3,
   ShieldCheck,
   Layers,
   Gauge,
@@ -49,7 +48,7 @@ const meta = {
 
 const overview = {
   purpose:
-    '车智绘（AutoAIGC）是面向汽车主机厂、经销商集团与一线销售的 AIGC 内容生产平台，通过「五大生成引擎 + 素材资产 + 数据分析 + 合规知识库」，将图片、图文、视频、PPT、朋友圈内容的生产周期从小时级压缩到分钟级，并在生成环节内置合规校验。',
+    '车智绘（AutoAIGC）是面向汽车主机厂、经销商集团与一线销售的 AIGC 内容生产平台，通过「五大生成引擎 + 素材资产 + 合规知识库」，将图片、图文、视频、PPT、朋友圈内容的生产周期从小时级压缩到分钟级，并在生成环节内置合规校验。',
   roles: [
     { role: '品牌 / 市场经理', need: '批量高质量产出、数据洞察、风险可控' },
     { role: '内容运营', need: '高效、模板化、多平台一键适配' },
@@ -66,7 +65,7 @@ const navRows = [
   { group: '五大生成引擎', module: 'AI PPT 生成', route: '/ppt', icon: Presentation },
   { group: '五大生成引擎', module: '朋友圈图文', route: '/moments', icon: MessageCircle },
   { group: '资产与数据', module: '素材资产管理', route: '/assets', icon: FolderKanban },
-  { group: '资产与数据', module: '数据分析中台', route: '/analytics', icon: BarChart3 },
+
   { group: '合规中心', module: '知识库', route: '/knowledge', icon: ShieldCheck },
 ]
 
@@ -202,25 +201,7 @@ const modules: Module[] = [
     ],
     acceptance: '卡片 / 行点击打开详情；收藏状态跨视图共享；下载有反馈；弹层可正确关闭并锁滚动。',
   },
-  {
-    id: 'analytics',
-    code: 'FR-ANA',
-    route: '/analytics',
-    title: '数据分析中台',
-    desc: '全域内容生产与传播效果洞察。',
-    icon: BarChart3,
-    frs: [
-      { id: 'FR-ANA-001', title: '时间范围切换', desc: '近 7 天 / 近 30 天 / 本季度 / 本年。' },
-      { id: 'FR-ANA-002', title: '核心 KPI 卡片', desc: '生成总量、采纳率、平均耗时、活跃门店数，含环比涨跌。' },
-      { id: 'FR-ANA-003', title: '生成量 vs 采纳量趋势图', desc: '区间趋势折线 / 面积图。' },
-      { id: 'FR-ANA-004', title: '渠道分发占比', desc: '饼图 + 图例（各平台占比）。' },
-      { id: 'FR-ANA-005', title: '各引擎使用量', desc: '柱状图对比五大引擎调用次数。' },
-      { id: 'FR-ANA-006', title: '生产耗时对比', desc: '人工制作 vs 平台生成折线图。' },
-      { id: 'FR-ANA-007', title: '热门内容 TOP 5', desc: '表格（标题 / 类型 / 渠道 / 曝光 / 互动率），支持导出报表。' },
-      { id: 'FR-ANA-008', title: '门店活跃榜', desc: '门店排名与活跃度进度条。' },
-    ],
-    acceptance: '图表正确渲染；时间范围切换更新描述文案；表格与排行完整展示。',
-  },
+
   {
     id: 'knowledge',
     code: 'FR-KB',
@@ -242,7 +223,7 @@ const modules: Module[] = [
 ]
 
 const promptSpecs = [
-  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、���假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
+  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出���畸变、乱码、���假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
   { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较���按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正��字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
   { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、viral_keywords、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
   { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、viral_keywords、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
@@ -273,8 +254,8 @@ const metrics = [
 
 const implementationCards = [
   { title: '任务状态机', body: 'draft → queued → running → succeeded / failed / canceled；进度 = completed_steps / total_steps × 100%，刷新后通过 task_id 恢复。' },
-  { title: '接口与幂等', body: '统一使用 /api/generations、/api/assets、/api/analytics、/api/knowledge/validate；写接口必须携带会话与 idempotencyKey。' },
-  { title: '数据与权限', body: 'generation_tasks、generation_outputs、assets、compliance_checks、analytics_events 五类核心数据；按 organization_id 隔离。' },
+  { title: '接口与幂等', body: '统一使用 /api/generations、/api/assets、/api/knowledge/validate；写接口必须携带会话与 idempotencyKey。' },
+  { title: '数据与权限', body: 'generation_tasks、generation_outputs、assets、compliance_checks 四类核心数据；按 organization_id 隔离。' },
   { title: '错误与重试', body: '统一返回 code、message、requestId、retryable；模型 5xx / 超时最多指数退避重试 2 次，参数、权限、合规错误不可重试。' },
   { title: '安全与验收', body: '上传白名单与大小校验由服务端执行，使用私有对象存储短期签名 URL；必须覆盖权限、重试、上传安全和主路径 E2E。' },
 ]
@@ -283,7 +264,6 @@ const implementationRows = [
   ['生成提交', 'POST /api/generations', 'engine、input、idempotencyKey', 'taskId + queued；重复幂等键返回同一任务'],
   ['任务查询', 'GET /api/generations/:taskId', 'taskId', 'status、progress、stage、outputs、error'],
   ['资产下载', 'POST /api/assets/:id/download', 'format、ratio', '5 分钟过期 downloadUrl；需重新鉴权'],
-  ['数据分析', 'GET /api/analytics', 'range、timezone、筛选项', 'KPI、趋势、渠道、引擎、榜单'],
   ['合规校验', 'POST /api/knowledge/validate', 'content', 'score、passed、counts、findings'],
 ]
 
@@ -369,7 +349,7 @@ const engineFlows: { id: string; title: string; icon: LucideIcon; steps: FlowSte
 ]
 
 const roadmap = [
-  { v: 'v1.0（当前基线）', d: '五大生成引擎 + 素材资产 + 数据分析 + 合规知识库，全部支持点击反馈与生成过程可视化。' },
+  { v: 'v2.0（当前基线）', d: '五大生成引擎 + 素材资产 + 合规知识库，支持点击反馈与生成过程可视化。' },
   { v: 'v1.1（规划）', d: '素材详情的分享 / 重命名 / 删除落地真实逻辑；模板库独立页面。' },
   { v: 'v1.2（规划）', d: '视频变体 / 多平台 A/B 重新评估引入；批量生成与任务队列。' },
   { v: 'v2.0（远期）', d: '多角色协作与审批流；私域获客数据回流与 ROI 归因。' },
@@ -714,7 +694,7 @@ export default function PrdPage() {
               <p className="text-sm font-medium">统一流水线</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组�� Prompt →
-                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
+                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重��� 1 次） → 引擎专属后处理 → 合规知识库三重校验
                 → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该流水线与 6.2 状态机、6.6 错误码，
                 差异仅在下方各引擎的专属校验与后处理节点。
               </p>
