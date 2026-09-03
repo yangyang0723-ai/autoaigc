@@ -83,7 +83,6 @@ const modules: Module[] = [
       { id: 'FR-HOME-002', title: '五大生成引擎入口', desc: '卡片陈列五大引擎，hover 抬升 + 发光，点击进入对应引擎。' },
       { id: 'FR-HOME-003', title: '关键指标概览', desc: '以卡片呈现生成量、耗时、通过率、复用率等核心数据摘要。' },
       { id: 'FR-HOME-004', title: '近 7 天生成趋势', desc: '按自然日聚合、无数据日补 0；卡片占满工作台主内容网格整行，图表使用 100% 宽度响应式填充。' },
-      { id: 'FR-HOME-005', title: '设计系统组件展示', desc: '展示统一视觉规范下的组件样式。' },
     ],
     acceptance: '所有卡片与按钮可点击并有反馈；引擎卡片按类型正确路由；近 7 天趋势卡片占满主内容宽度且图表响应式填充；图表无数据时展示占位。',
   },
@@ -714,7 +713,7 @@ export default function PrdPage() {
             <Card className="mb-4 border-primary/25 bg-primary/[0.04] p-4">
               <p className="text-sm font-medium">统一流水线</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组装 Prompt →
+                提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组�� Prompt →
                 调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
                 → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该流水线与 6.2 状态机、6.6 错误码，
                 差异仅在下方各引擎的专属校验与后处理节点。
