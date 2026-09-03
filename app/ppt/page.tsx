@@ -11,7 +11,6 @@ import {
   Presentation,
   ListTree,
   BarChart3,
-  MessageSquareText,
   Download,
   FileDown,
   Play,
@@ -35,9 +34,6 @@ const slides = [
   { title: '销量目标与预测', sub: '首年 8 万台', type: 'chart' },
 ]
 
-const notes =
-  '本页重点强调星海 SUV 在 25 万级市场的差异化优势。开场先抛出"智能座舱越级体验"的核心卖点，配合现场大屏演示 15.6 英寸中控实机操作。数据引用车型数据库最新参数，过渡到下一页竞品对比。建议停留 90 秒。'
-
 const genSteps = [
   { icon: ScanText, label: '解析主题与受众', desc: '提炼汇报目标与核心信息' },
   { icon: ListTree, label: '智能编排大纲', desc: '生成 6 页逻辑结构' },
@@ -55,7 +51,6 @@ export default function PptPage() {
   const [presenting, setPresenting] = useState(false)
   const [exporting, setExporting] = useState<null | 'PPTX' | 'PDF'>(null)
   const [exported, setExported] = useState<null | 'PPTX' | 'PDF'>(null)
-  const [chart, setChart] = useState<string | null>(null)
 
   function generate() {
     setStatus('generating')
@@ -125,28 +120,6 @@ export default function PptPage() {
               >
                 <span className="mb-2 block h-8 rounded bg-gradient-to-br from-primary/40 to-accent/30" />
                 {t}
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <ListTree className="size-4 text-primary" />
-            PPT 大纲（{slides.length} 页）
-          </div>
-          <div className="space-y-1.5">
-            {slides.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className={cn(
-                  'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors',
-                  current === i ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted',
-                )}
-              >
-                <span className="w-4 text-[10px]">{i + 1}</span>
-                <span className="flex-1 truncate font-medium">{s.title}</span>
               </button>
             ))}
           </div>
@@ -312,52 +285,6 @@ export default function PptPage() {
           </div>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="p-5">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-              <BarChart3 className="size-4 text-primary" />
-              数据智能可视化（FR-PPT-003）
-            </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              粘贴 Excel 数据，AI 自动推荐最佳图表类型并生成。图表与数据联动，数据更新后自动刷新。
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {['销量趋势', '市场份额', '客户画像', '漏斗转化'].map((c) => {
-                const on = chart === c
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setChart(on ? null : c)}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors active:scale-95',
-                      on
-                        ? 'border-primary/50 bg-primary/15 text-primary'
-                        : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                    )}
-                  >
-                    {on && <CheckCircle2 className="size-3" />}
-                    {c}
-                  </button>
-                )
-              })}
-            </div>
-            {chart && (
-              <p className="mt-2 flex items-center gap-1.5 text-[11px] text-primary">
-                <BarChart3 className="size-3" />
-                已为「{chart}」推荐柱状图并插入当前页
-              </p>
-            )}
-          </Card>
-
-          <Card className="p-5">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-              <MessageSquareText className="size-4 text-primary" />
-              演讲者备注（FR-PPT-005）
-            </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">{notes}</p>
-          </Card>
-        </div>
         </>
         )}
       </div>
