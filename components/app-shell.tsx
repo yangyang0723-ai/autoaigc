@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import {
   Car,
   Search,
-  Bell,
   Plus,
   Sparkles,
   ChevronDown,
@@ -149,15 +148,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="pr-8">搜索素材、模板、车型…</span>
               <kbd className="rounded border border-border bg-muted px-1.5 text-[10px]">⌘K</kbd>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="通知"
-              className="relative transition-transform active:scale-90"
-            >
-              <Bell className="size-5" />
-              <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-accent" />
-            </Button>
             <Button
               className="gap-1.5 h-9 px-3 transition-transform active:scale-95"
               onClick={() => router.push('/image')}
