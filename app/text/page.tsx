@@ -193,49 +193,6 @@ export default function TextPage() {
           <p className="mt-2 text-right text-[10px] text-muted-foreground">{manualTitle.length}/80</p>
         </Card>
 
-        <Card className="p-5">
-          <p className="mb-2 text-xs font-semibold">内容类型</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {contentTypes.map((c) => (
-              <Chip key={c} active={type === c} onClick={() => setType(c)}>
-                {c}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">写作风格</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {writeStyles.map((s) => (
-              <Chip key={s} active={style === s} onClick={() => setStyle(s)}>
-                {s}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">语气</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {tones.map((t) => (
-              <Chip key={t} active={tone === t} onClick={() => setTone(t)}>
-                {t}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">字数控制</p>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {lengths.map((l) => (
-              <Chip key={l} active={length === l} onClick={() => setLength(l)}>
-                {l}
-              </Chip>
-            ))}
-          </div>
-          <p className="mb-2 text-xs font-semibold">配图尺寸</p>
-          <div className="flex flex-wrap gap-2">
-            {imageSizes.map((s) => (
-              <Chip key={s.label} active={imageSize.label === s.label} onClick={() => setImageSize(s)}>
-                {s.label}
-              </Chip>
-            ))}
-          </div>
-        </Card>
-
         <Button className="h-11 gap-2" onClick={generate} disabled={status === 'generating'}>
           {status === 'generating' ? (
             <>
@@ -493,24 +450,7 @@ function GenerationProcess({ step }: { step: number }) {
         })}
       </div>
 
-      {/* Streaming skeleton preview */}
-      <div className="space-y-3 border-t border-border p-5">
-        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <PenLine className="size-3.5 text-primary" />
-          实时渲染预览
-        </div>
-        <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-        <div className="space-y-2">
-          <div className="h-3 w-full animate-pulse rounded bg-muted" />
-          <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
-        </div>
-        <div className="aspect-[16/9] w-full animate-pulse rounded-lg bg-muted" />
-        <div className="space-y-2">
-          <div className="h-3 w-full animate-pulse rounded bg-muted" />
-          <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
-        </div>
-      </div>
+
     </Card>
   )
 }
