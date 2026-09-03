@@ -120,7 +120,7 @@ export default function WorkbenchPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Weekly output chart */}
-        <Card className="lg:col-span-2">
+        <Card className="w-full lg:col-span-3">
           <CardHeader className="flex-row items-center justify-between">
             <div>
               <CardTitle>近 7 天生成趋势</CardTitle>
