@@ -7,7 +7,6 @@ import {
   Presentation,
   MessageCircle,
   FolderKanban,
-  ShieldCheck,
   ScrollText,
 } from 'lucide-react'
 
@@ -79,18 +78,6 @@ export const navGroups: NavGroup[] = [
         label: '素材资产管理',
         desc: '存储 / 检索 / 协作',
         icon: FolderKanban,
-      },
-    ],
-  },
-  {
-    title: '合规中心',
-    items: [
-      {
-        href: '/knowledge',
-        label: '知识库',
-        desc: '规则 / 敏感词 / 行业规范',
-        icon: ShieldCheck,
-        badge: '合规',
       },
     ],
   },

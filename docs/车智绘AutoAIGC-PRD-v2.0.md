@@ -16,7 +16,7 @@
 ## 1. 产品定位与目标用户
 
 ### 1.1 产品定位
-面向汽车主机厂、经销商集团、4S 门店与一线销售顾问的 **AI 营销内容生成平台**。通过五大生成引擎，把原本需要设计、文案、剪辑多角色协作数小时的内容生产压缩到分钟级，并在生成链路内置汽车行业合规知识库，实现「即生成、即合规」。
+面向汽车主机厂、经销商集团、4S 门店与一线销售顾问的 **AI 营销内容生成平台**。通过五大生成引擎，把原本需要设计、文案、剪辑多角色协作数小时的内容生产压缩到分钟级，并在生成链路内置汽车行业合规校验，实现「即生成、即合规」。
 
 ### 1.2 目标用户与核心诉求
 
@@ -34,7 +34,7 @@
 | --- | --- |
 | 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / PPT / 朋友圈五类生成器，统一实现 `Skill` 接口 |
 | taskId | 单次生成任务唯一标识，格式 `{skillId}_{base36时间戳}_{6位随机}`，失败也必须返回 |
-| 合规网关 | `POST /api/knowledge/validate`，对文本产出执行平台规则 / 敏感词 / 行业规范三重检测 |
+| 合规网关 | `POST /api/knowledge/validate`，对文本产出执行三重合规检测 |
 | 购车旅程阶段 | `journey_stage`，决定内容目标、信息密度与 CTA 类型 |
 | 爆款关键词 | 同时满足搜索意图、决策价值、平台习惯与事实可验证性的关键词组合 |
 | 采纳率 | 生成内容被实际下载或发布的比例 |
@@ -67,9 +67,7 @@
 ├─ 资产与数据
 │   ├─ /assets        素材资产管理     存储 / 检索 / 协作            FR-AST
 │   （数据分析中台已移除，不属于当前版本范围）
-├─ 合规中心
-│   └─ /knowledge     知识库           规则 / 敏感词 / 行业规范      FR-KB
-└─ 文档
+  └─ 文档
     └─ /prd           产品需求文档     PRD · 需求与验收              FR-DOC
 ```
 
@@ -120,7 +118,7 @@
 
 **统一工作流节点**：
 
-1. `validate_input`：校验必填字段、枚举值、数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
+1. `validate_input`：校验必填字段、枚举值���数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
 2. `create_task`：创建 `taskId` 与 `workflowRunId`，记录输入快照和幂等键。
 3. `prepare_context`：加载车型事实、品牌规范、用户素材和当前引擎参数，形成节点上下文。
 4. `compose_prompt`：根据上下文与引擎模板组装 Prompt 和结构化输出 Schema。
@@ -199,7 +197,7 @@
 export type SkillId = 'image' | 'text' | 'video' | 'ppt' | 'moments'
 
 export interface Skill<TInput, TOutput> {
-  meta: SkillMeta          // 引擎元信息
+  meta: SkillMeta          // 引擎元��息
   fields: SkillField[]     // 入参字段描述（驱动表单 / 校验 / 文档）
   stages: SkillStage[]     // 生成阶段（驱动 loading 动效）
   validate: (input: Partial<TInput>) => string[]   // 返回空数组代表通过
@@ -454,7 +452,7 @@ flowchart TD
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析创作描述（提取车型/场景/卖点）→ 阶段2 匹配视觉风格（套用风格与色调）</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
-  <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：视觉总监角色 + 车型事实 + style/ratio + 输出 Schema</div>
+  <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：��觉总监角色 + 车型事实 + style/ratio + 输出 Schema</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:linear-gradient(135deg, rgba(139,200,234,0.12), rgba(139,200,234,0.22));border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段3 扩散模型并行生成 count 张</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
@@ -906,7 +904,7 @@ flowchart TD
   B -- 通过 --> C[阶段1 解析场景与人设，结合每日内容日历]
   C --> D["Prompt 组装：销售顾问助手角色 + offer / store_info + persona 口吻 + 输出 Schema"]
   D --> E[阶段2 AI 文案撰写：共鸣开场 + 1 个核心福利点 + 咨询引导]
-  E --> F{"copy 长度 80–180 字 且 hashtags 3–5 个"}
+  E --> F{"copy 长度 80–180 字 �� hashtags 3–5 个"}
   F -- 不满足 --> F1[重试 1 次 → 仍失败 MODEL_ERROR]
   F -- 满足 --> G[阶段3 智能配图匹配：按 imageSize 挑图并叠加水印]
   G --> H{"watermark 输出与用户勾选完全一致"}
@@ -1012,17 +1010,10 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 数据分析中台及 `/analytics` 路由已从当前版本删除，不属于当前产品范围。相关页面、导航入口、分析接口与功能验收均不再作为开发和测试依据。
 
 
-### 5.4 知识库 / 合规中心（`/knowledge` · FR-KB）
+### 5.4 知识库 / 合规中心（已移除）
 
-| 编号 | 需求 | 说明 |
-| --- | --- | --- |
-| FR-KB-001 | 文案输入 | 粘贴待校验文案，实时显示字数，支持载入示例文案 |
-| FR-KB-002 | 一键校验 | 调用 `POST /api/knowledge/validate`，带加载态与错误提示 |
-| FR-KB-003 | 校验结果 | 合规评分、命中项数、三类分类计数 |
-| FR-KB-004 | 违规明细 | 逐条展示规则、命中词、风险等级、整改建议、来源；无违规给出通过提示 |
-| FR-KB-005 | 已接入知识域 | 平台规则库、敏感词库、行业 know-how、话术优化模板，含条目数与更新时间 |
-| FR-KB-006 | 知识域详情弹层 | 展示代表性词条节选；遮罩 / Esc 关闭并锁滚动 |
-| FR-KB-007 | 生成即合规 | 五大引擎内置调用本接口，产出自动完成三重检测 |
+知识库页面与独立知识库产品能力已移除，不属于当前版本的页面、导航和产品需求范围。合规校验接口仅作为生成工作流内部的系统能力保留。
+
 
 ---
 
