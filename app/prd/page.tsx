@@ -82,10 +82,10 @@ const modules: Module[] = [
       { id: 'FR-HOME-001', title: '平台概览 Hero', desc: '展示平台定位与「开始创作」主 CTA，带点击反馈并跳转。' },
       { id: 'FR-HOME-002', title: '五大生成引擎入口', desc: '卡片陈列五大引擎，hover 抬升 + 发光，点击进入对应引擎。' },
       { id: 'FR-HOME-003', title: '关键指标概览', desc: '以卡片呈现生成量、耗时、通过率、复用率等核心数据摘要。' },
-      { id: 'FR-HOME-004', title: '近 7 天生成趋势', desc: '按自然日聚合的趋势图表，无数据日补 0。' },
+      { id: 'FR-HOME-004', title: '近 7 天生成趋势', desc: '按自然日聚合、无数据日补 0；卡片占满工作台主内容网格整行，图表使用 100% 宽度响应式填充。' },
       { id: 'FR-HOME-005', title: '设计系统组件展示', desc: '展示统一视觉规范下的组件样式。' },
     ],
-    acceptance: '所有卡片与按钮可点击并有反馈；引擎卡片按类型正确路由；图表无数据时展示占位。',
+    acceptance: '所有卡片与按钮可点击并有反馈；引擎卡片按类型正确路由；近 7 天趋势卡片占满主内容宽度且图表响应式填充；图表无数据时展示占位。',
   },
   {
     id: 'image',
@@ -243,8 +243,8 @@ const modules: Module[] = [
 ]
 
 const promptSpecs = [
-  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、虚假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
-  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较：按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正��字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
+  { id: 'FR-IMG', name: 'AI 图片生成', role: '汽车品牌视觉创意总监', journey: '认知种草 / 兴趣考虑：用场景化视觉建立车型第一印象，突出可验证卖点。', vars: 'journey_stage、viral_keywords、prompt、style、scene、vehicle、ratio、count、reference_image?', output: 'images[]（url/width/height/seed）、revisedPrompt', rules: '车型外观一致；无畸变、乱码、虚假 Logo、水印；宽高符合 ratio，数量等于 count。', prompt: '你是汽车品牌视觉创意总监。请为{{vehicle}}生成{{count}}张{{ratio}}汽车营销图，处于{{journey_stage}}阶段。创意：{{prompt}}；风格：{{style}}；场景：{{scene}}。保持车身比例、灯组、轮毂、车标和颜色一致；不得出现畸变、乱码、���假或竞品 Logo、水印；不要在图片中绘制文字。只返回 JSON：{"images":[{"url":"string","width":0,"height":0,"seed":"string"}],"revisedPrompt":"string"}。' },
+  { id: 'FR-TXT', name: 'AI 图文生成', role: '汽车行业内容运营专家', journey: '认知种草 / 兴趣考虑 / 车型比较���按平台解释用户关心的空间、智能、安全、能源和用车成本。', vars: 'journey_stage、viral_keywords、topic、platform、tone、length、keywords、image_size、brand_facts', output: 'title、body、tags[]、coverSuggestions[]、wordCount', rules: '只使用事实资料；避免绝对化、虚构参数和未证实优惠；正��字符数误差不超过 5%。', prompt: '你是汽车行业内容运营专家。请围绕{{topic}}为{{platform}}撰写{{length}}字内容，购车阶段为{{journey_stage}}，语气为{{tone}}。仅使用{{brand_facts}}，自然融入{{keywords}}，解释用户决策问题并给出合规咨询 CTA。只返回 JSON：{"title":"string","body":"string","tags":["string"],"coverSuggestions":["string","string"],"wordCount":0}。' },
   { id: 'FR-VID', name: 'AI 视频生成', role: '汽车短视频导演与编导', journey: '兴趣考虑 / 试驾体验 / 购买决策：通过功能演示、试驾路线和真实证据降低决策疑虑。', vars: 'journey_stage、viral_keywords、topic、digital_human、voice、video_type、video_size、duration_sec、vehicle_facts', output: 'videoUrl、coverUrl、durationSec、storyboard[]、captions[]', rules: '分镜总时长等于目标时长；前三秒给出利益点；不得编造性能、价格和背书。', prompt: '你是汽车短视频导演。请为{{journey_stage}}阶段制作{{duration_sec}}秒{{video_size}}视频，主题为{{topic}}，使用{{digital_human}}和{{voice}}。基于{{vehicle_facts}}拆分镜头，前三秒呈现利益点，结尾使用合规预约试驾 CTA。只返回包含 videoUrl、coverUrl、durationSec、storyboard[]、captions[] 的 JSON。' },
   { id: 'FR-PPT', name: 'AI PPT 生成', role: '汽车品牌市场汇报顾问', journey: '车型比较 / 购买决策：面向管理层、经销商或销售团队，呈现市场、线索和转化证据。', vars: 'journey_stage、viral_keywords、topic、scene、template、pages、audience、data', output: 'title、template、slides[]（index/title/bullets/notes）', rules: '一页一个结论；每页 3–5 条要点；图表注明口径、单位、时间范围和来源。', prompt: '你是汽车品牌市场汇报顾问。请为{{audience}}制作{{pages}}页{{scene}}演示文稿，主题为{{topic}}，对应购车阶段{{journey_stage}}。只能使用{{data}}中的事实；一页一个结论，图表注明口径、单位、时间范围和来源。只返回包含 title、template、slides[] 的 JSON。' },
   { id: 'FR-MOM', name: '朋友圈图文', role: '一线汽车销售顾问内容助手', journey: '购买决策 / 交付分享 / 车主运营：以门店和顾问的可信关系推动咨询、到店、交付分享和售后复购。', vars: 'journey_stage、viral_keywords、scene、persona、image_size、watermark、vehicle、offer、store_info', output: 'copy、images[]、hashtags[]、watermark[]', rules: '正文 80–180 字；低打扰口语；禁止虚构库存、价格、限时、案例和未经授权联系方式。', prompt: '你是一线汽车销售顾问的朋友圈内容助手。请为{{journey_stage}}阶段生成{{persona}}口吻的{{scene}}图文，车型{{vehicle}}，活动事实{{offer}}，门店信息{{store_info}}，配图{{image_size}}。正文80–180字，低打扰并包含咨询 CTA；只返回包含 copy、images[]、hashtags[]、watermark[]、compliance 的 JSON。' },
@@ -304,7 +304,7 @@ const engineFlows: { id: string; title: string; icon: LucideIcon; steps: FlowSte
       { label: '注入上下文', note: '车型知识库事实 + viral_keywords（核心/场景/证据词）' },
       { label: '组装 Prompt A 并调用图像模型', note: '按 ratio 生成 count 张候选图' },
       { label: '校验输出', note: '宽高比=ratio 且数量=count', decision: { pass: '进入品牌安全检测', fail: 'MODEL_OUTPUT_INVALID，重试 1 次' } },
-      { label: '品牌安全检测', note: '无乱码 / 无竞品 Logo / 无水印 / 无畸变' },
+      { label: '品牌安���检测', note: '无乱码 / 无竞品 Logo / 无水印 / 无畸变' },
       { label: '合规知识库校验', note: '三重校验：平台规则 / 敏感词 / 行业规范', decision: { pass: '落库 4 张候选图 + revisedPrompt', fail: 'COMPLIANCE_BLOCKED' } },
       { label: '前端网格展示', note: '用户选中 1 张 → 按导出比例条一键导出' },
     ],
