@@ -99,8 +99,8 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         href: '/prd',
-        label: '产品需求文档',
-        desc: 'PRD · 需求与验收',
+        label: '车智绘AutoAIGC-PRD-v2.0.md',
+        desc: 'PRD v2.0 · 需求与验收',
         icon: ScrollText,
       },
     ],
