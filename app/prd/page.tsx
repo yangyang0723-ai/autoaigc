@@ -48,7 +48,7 @@ const meta = {
 
 const overview = {
   purpose:
-    '车智绘（AutoAIGC）是面向汽车主机厂、经销商集团与一线销售的 AIGC 内容生产平台，通过「五大生成引擎 + 素材资产 + 合规知识库」，将图片、图文、视频、PPT、朋友圈内容的生产周期从小时级压缩到分钟级，并在生成环节内置合规校验。',
+    '车智绘（AutoAIGC）是面向汽车主机厂、经销商集团与一线销售的 AIGC 内容生产平台，通过「五大生成引擎 + 素材资产 + 合规知识库」，将图片、图文、视频、PPT、朋友圈内容的生产周期从小时级压缩到分钟级。五大生成引擎统一采用可追踪、可恢复的工作流模式，按节点传递上下文并在完成前执行硬约束与合规校验。',
   roles: [
     { role: '品牌 / 市场经理', need: '批量高质量产出、数据洞察、风险可控' },
     { role: '内容运营', need: '高效、模板化、多平台一键适配' },
@@ -101,7 +101,7 @@ const modules: Module[] = [
       { id: 'FR-IMG-006', title: '图片操作', desc: '每张图支持收藏 / 放大 / 下载，均有点击反馈。' },
       { id: 'FR-IMG-007', title: '生成过程动效', desc: '按解析描述 → 匹配风格 → 扩散生成 → 超分出图四阶段渲染。' },
     ],
-    acceptance: '参数为单选且状态清晰；输出数量等于 count、尺寸符合所选比例；选中图片高亮且操作均有反馈。',
+    acceptance: '参数为单选且状态清晰；按工作流节点展示生成进度并支持失败节点重试；输出数量等于 count、尺寸符合所选比例；选中图片高亮且操作均有反馈。',
   },
   {
     id: 'text',
@@ -120,7 +120,7 @@ const modules: Module[] = [
       { id: 'FR-TXT-007', title: '一键复制', desc: '复制正文，带「已复制」反馈。' },
       { id: 'FR-TXT-008', title: '生成过程动效', desc: '按解析选题 → 生成大纲 → 撰写正文 → 优化标签配图四阶段渲染。' },
     ],
-    acceptance: '复制 / 转换 / 关键词均有反馈；事实资料来源清晰；尺寸切换实时改变配图比例；不提供 SEO 评分与优化结果。',
+    acceptance: '复制 / 转换 / 关键词均有反馈；工作流按节点传递选题、事实与正文结果，失败节点可重试；事实资料来源清晰；尺寸切换实时改变配图比例；不提供 SEO 评分与优化结果。',
   },
   {
     id: 'video',
@@ -140,7 +140,7 @@ const modules: Module[] = [
       { id: 'FR-VID-008', title: '智能分镜时间轴', desc: '固定 4 镜头缩略图展示，点击切换预览镜头。' },
       { id: 'FR-VID-009', title: '一键成片渲染过程', desc: '按解析脚本 → 智能分镜 → 数字人口播 → 卡点合成四阶段渲染。' },
     ],
-    acceptance: '尺寸切换后预览比例正确；分镜时长之和等于目标时长；字幕与口播逐句对应；视频变体 A/B 不在本期范围。',
+    acceptance: '工作流按节点传递脚本、分镜、音频与视频片段，节点状态可追踪且失败可重试；尺寸切换后预览比例正确；分镜时长之和等于目标时长；字幕与口播逐句对应；视频变体 A/B 不在本期范围。',
   },
   {
     id: 'ppt',
@@ -158,7 +158,7 @@ const modules: Module[] = [
       { id: 'FR-PPT-006', title: '导出', desc: '导出 PPTX / PDF，带加载态与「已导出」反馈。' },
       { id: 'FR-PPT-007', title: '一键生成渲染过程', desc: '按解析主题 → 编排大纲 → 套用模板 → 数据可视化四阶段渲染。' },
     ],
-    acceptance: '生成页数等于所选页数；缩略图翻页、演示切换、导出反馈均生效；图表缺少数据时标记「待补充」而非伪造数值。',
+    acceptance: '工作流按节点传递主题、大纲、模板与页面数据，结果可恢复并在持久化后导出；生成页数等于所选页数；缩略图翻页、演示切换、导出反馈均生效；图表缺少数据时标记「待补充」而非伪造数值。',
   },
   {
     id: 'moments',
@@ -179,7 +179,7 @@ const modules: Module[] = [
       { id: 'FR-MOM-009', title: '复制文案', desc: '一键复制，带「已复制」反馈。' },
       { id: 'FR-MOM-010', title: '一键生成渲染过程', desc: '手机 mockup 骨架屏按四阶段渲染，完成后恢复预览。' },
     ],
-    acceptance: '尺寸与水印切换实时反映到预览；文案长度 80–180 字、标签 3–5 个；水印输出与勾选一致；复制与点赞均有反馈。',
+    acceptance: '工作流按节点传递场景、人设、素材与水印配置，节点状态可追踪且失败可重试；尺寸与水印切换实时反映到预览；文案长度 80–180 字、标签 3–5 个；水印输出与勾选一致；复制与点赞均有反馈。',
   },
   {
     id: 'assets',
@@ -252,6 +252,7 @@ const metrics = [
 ]
 
 const implementationCards = [
+  { title: '统一工作流', body: '五大引擎均按 validate_input → create_task → prepare_context → compose_prompt → model_generate → parse_and_validate → compliance_check → persist_result 执行；节点状态可追踪、失败可从检查点恢复。' },
   { title: '任务状态机', body: 'draft → queued → running → succeeded / failed / canceled；进度 = completed_steps / total_steps × 100%，刷新后通过 task_id 恢复。' },
   { title: '接口与幂等', body: '统一使用 /api/generations、/api/assets、/api/knowledge/validate；写接口必须携带会话与 idempotencyKey。' },
   { title: '数据与权限', body: 'generation_tasks、generation_outputs、assets、compliance_checks 四类核心数据；按 organization_id 隔离。' },
@@ -367,7 +368,7 @@ const toc = [
   { id: 'non-functional', label: '4. 非功能性需求', icon: Gauge },
   { id: 'metrics', label: '5. 数据指标', icon: Target },
   { id: 'implementation', label: '6. 研发实现规格', icon: ServerCog },
-  { id: 'engine-flows', label: '6.9 引擎实现流程图', icon: Workflow },
+  { id: 'engine-flows', label: '6.9 五大引擎工作流', icon: Workflow },
   { id: 'roadmap', label: '7. 迭代规划', icon: GitBranch },
   { id: 'risks', label: '8. 风险与依赖', icon: AlertTriangle },
   ]
@@ -691,8 +692,8 @@ export default function PrdPage() {
               <p className="text-sm font-medium">统一流水线</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 提交参数 → 校验与配额 → 创建任务(queued) → Worker 领取(running) → 注入旅程/关键词上下文 → 组装 Prompt →
-                调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
-                → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该流水线与 6.2 状态机、6.6 错误码，
+创建 workflowRunId → 节点状态 pending/running/succeeded/failed → 调用模型（失败指数退避重试 ≤2 次） → JSON Schema 解析（失败重试 1 次） → 引擎专属后处理 → 合规知识库三重校验
+            → 落库 generation_outputs/assets → status=succeeded 并推送前端。五大引擎共用该可恢复流水线与 6.2 状态机、6.6 错误码，
                 差异仅在下方各引擎的专属校验与后处理节点。
               </p>
             </Card>
