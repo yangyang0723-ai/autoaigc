@@ -7,7 +7,6 @@ import {
   Presentation,
   MessageCircle,
   FolderKanban,
-  BarChart3,
   ShieldCheck,
   ScrollText,
 } from 'lucide-react'
@@ -80,12 +79,6 @@ export const navGroups: NavGroup[] = [
         label: '素材资产管理',
         desc: '存储 / 检索 / 协作',
         icon: FolderKanban,
-      },
-      {
-        href: '/analytics',
-        label: '数据分析中台',
-        desc: '效果追踪与优化',
-        icon: BarChart3,
       },
     ],
   },
