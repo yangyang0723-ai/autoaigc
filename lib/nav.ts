@@ -7,7 +7,6 @@ import {
   Presentation,
   MessageCircle,
   FolderKanban,
-  ShieldCheck,
   ScrollText,
 } from 'lucide-react'
 
@@ -83,24 +82,12 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: '合规中心',
-    items: [
-      {
-        href: '/knowledge',
-        label: '知识库',
-        desc: '规则 / 敏感词 / 行业规范',
-        icon: ShieldCheck,
-        badge: '合规',
-      },
-    ],
-  },
-  {
     title: '文档',
     items: [
       {
         href: '/prd',
-        label: '产品需求文档',
-        desc: 'PRD · 需求与验收',
+        label: '车智绘AutoAIGC-PRD-v2.0.md',
+        desc: 'PRD v2.0 · 需求与验收',
         icon: ScrollText,
       },
     ],
