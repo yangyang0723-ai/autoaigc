@@ -40,8 +40,7 @@ export default function WorkbenchPage() {
               早上好，张经理 👋
             </h2>
             <p className="mt-2 text-pretty text-sm leading-relaxed text-muted-foreground">
-              今天有 <span className="font-semibold text-foreground">3 个营销 campaign</span> 待产出内容。
-              选择一个生成引擎，让每一位汽车营销人都能像专业创意团队一样高效创作。
+              让每一位汽车营销人都能像专业创意团队一样高效创作。
             </p>
             <div className="mt-5 flex flex-wrap gap-2.5">
               <Link
