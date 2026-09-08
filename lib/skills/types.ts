@@ -2,7 +2,7 @@
 // 每个 skill 都遵循同一套契约：元信息(meta) + 入参描述(fields) + 强类型入参/出参 + run() 生成函数。
 // 当前 run() 为 mock 实现，未来将内部替换为真实模型调用（AI Gateway / 自建服务），调用方无需改动。
 
-export type SkillId = 'image' | 'text' | 'video' | 'ppt' | 'moments'
+export type SkillId = 'image' | 'text' | 'video' | 'moments'
 
 /** 入参字段描述，供表单渲染 / 校验 / 文档生成使用 */
 export interface SkillField {
@@ -134,26 +134,6 @@ export interface VideoOutput {
   durationSec: number
   storyboard: StoryboardShot[]
   captions: string[]
-}
-
-// 4. AI PPT 生成
-export interface PptInput {
-  topic: string
-  scene: string
-  template: string
-  pages: number
-}
-export interface PptSlide {
-  index: number
-  title: string
-  bullets: string[]
-  chartType?: 'bar' | 'line' | 'pie' | 'none'
-  notes: string
-}
-export interface PptOutput {
-  title: string
-  template: string
-  slides: PptSlide[]
 }
 
 // 5. 朋友圈图文

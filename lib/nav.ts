@@ -4,7 +4,6 @@ import {
   ImageIcon,
   FileText,
   Clapperboard,
-  Presentation,
   MessageCircle,
   FolderKanban,
   ScrollText,
@@ -55,12 +54,6 @@ export const navGroups: NavGroup[] = [
         label: 'AI 视频生成',
         desc: '口播 / 展示 / 切片',
         icon: Clapperboard,
-      },
-      {
-        href: '/ppt',
-        label: 'AI PPT 生成',
-        desc: '发布会 / 培训 / 汇报',
-        icon: Presentation,
       },
       {
         href: '/moments',

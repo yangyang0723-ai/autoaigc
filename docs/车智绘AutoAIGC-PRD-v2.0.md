@@ -23,7 +23,7 @@
 | 角色 | 典型场景 | 核心诉求 |
 | --- | --- | --- |
 | 主机厂市场部 | 新车上市、节点大促 | 统一品牌调性，批量产出多平台素材 |
-| 经销商集团市场负责人 | 区域活动、经营汇报 | 快速产出 PPT / 海报，掌握门店内容效果 |
+| 经销商集团市场负责人 | 区域活动、经营汇报 | 快速产出海报与多平台素材，掌握门店内容效果 |
 | 4S 店新媒体运营 | 公众号 / 小红书 / 抖音日更 | 低成本高频更新，平台调性自动适配 |
 | 一线销售顾问 | 每日朋友圈获客 | 3 步出图出文，带个人二维码，不违规 |
 | 合规 / 法务 | 内容风控 | 广告法、平台规则、行业规范三重自动拦截 |
@@ -32,7 +32,7 @@
 
 | 术语 | 说明 |
 | --- | --- |
-| 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / PPT / 朋友圈五类生成器，统一实现 `Skill` 接口 |
+| 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / 朋友圈四类生成器，统一实现 `Skill` 接口 |
 | taskId | 单次生成任务唯一标识，格式 `{skillId}_{base36时间戳}_{6位随机}`，失败也必须返回 |
 | 合规网关 | `POST /api/knowledge/validate`，对文本产出执行三重合规检测 |
 | 购车旅程阶段 | `journey_stage`，决定内容目标、信息密度与 CTA 类型 |
@@ -62,7 +62,7 @@
 │   ├─ /image         AI 图片生成      海报 / 对比图 / 配图          FR-IMG
 │   ├─ /text          AI 图文生成      推文 / 种草 / 详情页          FR-TXT
 │   ├─ /video         AI 视频生成      口播 / 展示 / 切片            FR-VID
-│   ├─ /ppt           AI PPT 生成      发布会 / 培训 / 汇报          FR-PPT
+
 │   └─ /moments       朋友圈图文       一线销售快速发圈              FR-MOM
 ├─ 资产与数据
 │   ├─ /assets        素材资产管理     存储 / 检索 / 协作            FR-AST
@@ -87,7 +87,7 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│ 表现层  app/{image,text,video,ppt,moments}/page.tsx      │
+│ 表现层  app/{image,text,video,moments}/page.tsx      │
 │  · 由 skill.fields 驱动参数表单                           │
 │  · 由 skill.stages 驱动生成阶段动效                       │
 │  · 消费 SkillResult，渲染结果或错误分支                    │
@@ -95,7 +95,7 @@
                            │ runSkill(id, input)
 ┌──────────────────────────▼──────────────────────────────┐
 │ 调度层  lib/skills/index.ts                              │
-│  · skills 注册表（image/text/video/ppt/moments）          │
+│  · skills 注册表（image/text/video/moments）          │
 │  · getSkill(id) / runSkill(id, input) 动态调度            │
 │  · skillList 供导航、文档、选择器复用                      │
 └──────────────────────────┬──────────────────────────────┘
@@ -141,8 +141,7 @@
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 图片<br/>/image · FR-IMG</div>
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 图文<br/>/text · FR-TXT</div>
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 视频<br/>/video · FR-VID</div>
-    <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI PPT<br/>/ppt · FR-PPT</div>
-    <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">朋友圈图文<br/>/moments · FR-MOM</div>
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">朋友圈图文<br/>/moments · FR-MOM</div>
   </div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1.4;">▼ runSkill(id, input) 动态调度</div>
 
@@ -174,9 +173,7 @@
     <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
       <b style="color:#8BC8EA;">视频 · 领域节点</b><br/>解析脚本→智能分镜→数字人口播→卡点合成<br/><b>硬约束</b>：Σ durationSec=durationSec<br/><b>合规</b>：captions 事实来源
     </div>
-    <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
-      <b style="color:#8BC8EA;">PPT · 领域节点</b><br/>解析受众→编排大纲→套模板→数据可视化<br/><b>硬约束</b>：slides.length=pages<br/><b>合规</b>：图表口径/来源齐全
-    </div>
+
     <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
       <b style="color:#8BC8EA;">朋友圈 · 领域节点</b><br/>解析场景→文案→配图水印→合规润色<br/><b>硬约束</b>：copy 80-180字 / 水印一致<br/><b>合规</b>：库存/价格/案例来源
     </div>
@@ -680,7 +677,7 @@ flowchart TD
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);font-size:12.5px;margin:6px 0;">validate：topic 非空 且 15 ≤ durationSec ≤ 60 <span style="color:#EA6668;font-weight:600;">｜失败 → INVALID_INPUT</span></div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
-  <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析脚本（拆解卖点与叙事节奏）</div>
+  <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析脚本（���解卖点与叙事节奏）</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：短视频导演角色 + vehicle_facts + type/voice + 分镜 Schema</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
@@ -730,9 +727,10 @@ flowchart TD
 
 ---
 
-### 4.4 AI PPT 生成（`/ppt` · FR-PPT）
+### 4.4 PPT 生成（已移除）
 
-**元信息**：`id: 'ppt'` · `estimatedMs: 3900` · 4 阶段
+PPT 生成页面、技能实现、导航入口及 FR-PPT 功能需求已从当前版本移除，不属于当前产品范围。
+
 
 **工作流模式**：按「输入校验 → 任务创建 → 主题与受众准备 → 大纲编排 → 模板渲染 → 数据可视化 → 结果校验 → 合规校验 → 持久化」节点执行，主题、大纲、模板和页面数据按节点依赖传递。
 
@@ -906,7 +904,7 @@ flowchart TD
   D --> E[阶段2 AI 文案撰写：共鸣开场 + 1 个核心福利点 + 咨询引导]
   E --> F{"copy 长度 80–180 字 �� hashtags 3–5 个"}
   F -- 不满足 --> F1[重试 1 次 → 仍失败 MODEL_ERROR]
-  F -- 满足 --> G[阶段3 智能配图匹配：按 imageSize 挑图并叠加水印]
+  F -- 满足 --> G[阶段3 智能配图匹���：按 imageSize 挑图并叠加水印]
   G --> H{"watermark 输出与用户勾选完全一致"}
   H -- 不一致 --> H1[标记异常，禁止自行追加二维码 / 电话 / Logo]
   H -- 一致 --> I[阶段4 合规润色校验]
