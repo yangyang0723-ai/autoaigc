@@ -35,7 +35,7 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: '五大生成引擎',
+    title: '内容生成引擎',
     items: [
       {
         href: '/image',

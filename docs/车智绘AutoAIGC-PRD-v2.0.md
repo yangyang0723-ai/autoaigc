@@ -16,7 +16,7 @@
 ## 1. 产品定位与目标用户
 
 ### 1.1 产品定位
-面向汽车主机厂、经销商集团、4S 门店与一线销售顾问的 **AI 营销内容生成平台**。通过五大生成引擎，把原本需要设计、文案、剪辑多角色协作数小时的内容生产压缩到分钟级，并在生成链路内置汽车行业合规校验，实现「即生成、即合规」。
+面向汽车主机厂、经销商集团、4S 门店与一线销售顾问的 **AI 营销内容生成平台**。通过内容生成引擎，把原本需要设计、文案、剪辑多角色协作数小时的内容生产压缩到分钟级，并在生成链路内置汽车行业合规校验，实现「即生成、即合规」。
 
 ### 1.2 目标用户与核心诉求
 
@@ -58,7 +58,7 @@
 车智绘 AutoAIGC
 ├─ 概览
 │   └─ /              工作台          数据总览与快捷创作            FR-HOME
-├─ 五大生成引擎
+├─ 内容生成引擎
 │   ├─ /image         AI 图片生成      海报 / 对比图 / 配图          FR-IMG
 │   ├─ /text          AI 图文生成      推文 / 种草 / 详情页          FR-TXT
 │   ├─ /video         AI 视频生成      口播 / 展示 / 切片            FR-VID
@@ -112,15 +112,15 @@
 
 **关键设计约束**：`run()` 当前为 mock（`simulateLatency` + 贴近真实的示例数据）。接入真实模型时**只替换 `run()` 内部实现，调用方代码零改动**——这是全平台接入真实 AI 的唯一改造点。
 
-### 3.2 五大生成引擎统一工作流模式
+### 3.2 内容生成引擎统一工作流模式
 
-五大生成引擎必须以工作流（Workflow）模式执行，不得将一次生成实现为单次无状态模型调用。每次生成创建一个 `workflowRunId`，由调度层按顺序执行可追踪的工作流节点，并将节点状态实时反馈到页面。
+内容生成引擎必须以工作流（Workflow）模式执行，不得将一次生成实现为单次无状态模型调用。每次生成创建一个 `workflowRunId`，由调度层按顺序执行可追踪的工作流节点，并将节点状态实时反馈到页面。
 
 **统一工作流节点**：
 
 1. `validate_input`：校验必填字段、枚举值���数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
 2. `create_task`：创建 `taskId` 与 `workflowRunId`，记录输入快照和幂等键。
-3. `prepare_context`：加载车型事实、品牌规范、用户素材和当前引擎参数，形成节点上下文。
+3. `prepare_context`：加载车型事实、品牌规范、用户素材��当前引擎参数，形成节点上下文。
 4. `compose_prompt`：根据上下文与引擎模板组装 Prompt 和结构化输出 Schema。
 5. `model_generate`：调用对应模型或模型链，支持超时、指数退避和最多 1 次自动重试。
 6. `parse_and_validate`：解析结构化结果，校验字段完整性、数量、尺寸、时长或页数等硬约束。
@@ -129,12 +129,12 @@
 
 **工作流要求**：节点必须有 `pending / running / succeeded / failed` 状态；后续节点只能消费前序节点的结构化输出；失败节点可从最近检查点恢复，禁止重复创建任务；每个引擎可在上述节点之间增加领域节点，但不得跳过输入校验、硬约束校验、合规校验和结果持久化。
 
-### 3.2.1 五大引擎统一工作流总览图
+### 3.2.1 内容生成引擎统一工作流总览图
 
 ```html type="renderer"
 <html style="margin:0;padding:0;">
 <div style="background-color:transparent;box-sizing:border-box;padding:16px;font-family:'PingFang SC','Segoe UI',Arial,sans-serif;color:#1A1B1C;">
-  <div style="font-size:15px;font-weight:600;margin-bottom:2px;">五大生成引擎 · 统一工作流总览</div>
+  <div style="font-size:15px;font-weight:600;margin-bottom:2px;">内容生成引擎 · 统一工作流总览</div>
   <div style="font-size:12px;color:#6B7280;margin-bottom:12px;">所有引擎经 runSkill(id, input) 动态调度，共享 8 节点 Workflow，领域差异仅出现在中间节点</div>
 
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
@@ -206,7 +206,7 @@ export interface SkillMeta {
   name: string
   description: string
   route: string        // 对应前端路由
-  frPrefix: string     // 需求编号前缀，与本文档对应
+  frPrefix: string     // 需求编号前缀��与本文档对应
   estimatedMs: number  // 预计耗时，用于前端进度条
 }
 
@@ -237,7 +237,7 @@ const res = await imageSkill.run({ prompt: '蓝色科技SUV海报', style: '科�
 const res = await runSkill('ppt', { topic: '星海SUV上市发布', scene: '新车发布会', template: '科技蓝', pages: 6 })
 ```
 
-### 3.3 五大引擎共用的 AI 调用主流程
+### 3.3 内容生成引擎共用的 AI 调用主流程
 
 ```mermaid
 flowchart TD
@@ -250,7 +250,7 @@ flowchart TD
   F --> G["Prompt 组装：system_prompt + 行业上下文 + user_prompt + output_schema"]
   G --> H[调用模型]
   H -- 超时 / 5xx --> H1[指数退避重试 ≤ 2 次，间隔 1s → 2s]
-  H1 -- 仍失败 --> H2[返回 MODEL_ERROR]
+  H1 -- 仍失败 --> H2[��回 MODEL_ERROR]
   H -- 限流 429 --> H3[返回 RATE_LIMITED]
   H -- 成功 --> I[按 TOutput JSON Schema 解析]
   I -- 解析失败 --> I1[重试 1 次 → 仍失败返回 MODEL_ERROR]
@@ -345,7 +345,7 @@ flowchart TD
 
 ### 3.8 购车旅程注入规则
 
-五大引擎必须接收统一的 `journey_stage`，据此调整内容目标、信息密度与 CTA。枚举固定为：`awareness` · `consideration` · `comparison` · `test_drive` · `purchase` · `delivery` · `retention`。
+内容生成引擎必须接收统一的 `journey_stage`，据此调整内容目标、信息密度与 CTA。枚举固定为：`awareness` · `consideration` · `comparison` · `test_drive` · `purchase` · `delivery` · `retention`。
 
 | 阶段 | 用户问题 | 内容策略 | 推荐 CTA | 禁止事项 |
 | --- | --- | --- | --- | --- |
@@ -354,7 +354,7 @@ flowchart TD
 | 车型比较 | 和其他车怎么选 | 只比较有来源的维度，标注口径与时间 | 预约顾问对比 | 片面截取、虚构排名、绝对化结论 |
 | 试驾体验 | 开起来怎么样 | 真实试驾路线、功能操作、可验证证据 | 预约试驾 | 模拟用户评价、虚构体验数据 |
 | 购买决策 | 现在买需要什么信息 | 官方价格、金融、权益、库存、门店信息 | 咨询报价 / 预约到店 | 虚构限时、库存、优惠、保价承诺 |
-| 交付分享 | 提车后如何分享 | 交付节点、用车场景、真实车主模板 | 分享交车 / 联系门店 | 未授权使用车主身份或照片 |
+| 交付分享 | 提车后如何分享 | 交付节点、用车场景、真实车主模板 | 分享��车 / 联系门店 | 未授权使用车主身份或照片 |
 | 车主运营 | 如何持续服务 | 保养、活动、权益、复购的低打扰沟通 | 预约保养 / 查看权益 | 过度营销、诱导、泄露车主信息 |
 
 服务端将 `journey_stage`、`persona`、`channel`、`conversion_goal`、`brand_facts` 注入每套 Prompt；阶段与内容类型不匹配时返回校验提示而非自行猜测。输出需记录阶段字段，供按旅程分析生成、采纳、线索与成交转化。
@@ -372,7 +372,7 @@ flowchart TD
 
 ---
 
-## 4. 五大生成引擎需求与 AI 调用流程
+## 4. 内容生成引擎需求与 AI 调用流程
 
 ### 4.1 AI 图片生成（`/image` · FR-IMG）
 
@@ -982,7 +982,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 | 编号 | 需求 | 说明 |
 | --- | --- | --- |
 | FR-HOME-001 | 平台概览 Hero | 展示平台定位与「开始创作」主 CTA，带点击反馈并跳转 |
-| FR-HOME-002 | 五大生成引擎入口 | 卡片陈列，hover 抬升 + 发光，点击进入对应引擎 |
+| FR-HOME-002 | 内容生成引擎入口 | 卡片陈列，hover 抬升 + 发光，点击进入对应引擎 |
 | FR-HOME-003 | 关键指标概览 | KPI 卡片摘要（生成量、耗时、通过率、复用率） |
 | FR-HOME-004 | 近 7 天生成趋势 | 趋势图表按自然日聚合，无数据日补 0；卡片在工作台主内容网格中占满整行，与其他主内容区域宽度一致，图表容器使用 100% 宽度响应式填充。 |
 | FR-HOME-005 | 设计系统组件展示 | 展示统一视觉规范下的组件样式（当前工作台页面不展示） |
@@ -1001,7 +1001,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 | FR-AST-008 | 素材详情弹层 | 大图预览 + 元信息 + 下载/收藏/分享/重命名/删除；遮罩或 Esc 关闭并锁滚动 |
 | FR-AST-009 | 上传素材 | 顶部上传入口 |
 
-**与引擎的联动**：五大引擎生成成功后，`output` 中的图片 / 视频 / 文档资产自动写入素材库，并继承 `taskId`、引擎类型、生成参数、`journey_stage` 作为检索元数据。
+**与引擎的联动**：内容生成引擎生成成功后，`output` 中的图片 / 视频 / 文档资产自动写入素材库，并继承 `taskId`、引擎类型、生成参数、`journey_stage` 作为检索元数据。
 
 ### 5.3 数据分析中台（已移除）
 
@@ -1020,7 +1020,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ### 6.1 性能
 - 首屏 LCP ≤ 2.5s；交互 INP ≤ 200ms；CLS ≤ 0.1。
 - 生成阶段动效必须在点击后 100ms 内出现。
-- 图片使用 `next/image`，视频封面懒加载。
+- 图片使�� `next/image`，视频封面懒加载。
 
 ### 6.2 可访问性
 - 所有图标按钮必须有 `aria-label`；弹层支持 Esc 关闭并锁定背景滚动。
@@ -1046,8 +1046,8 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ## 7. 验收标准
 
 ### 7.1 AI 调用链路
-- [ ] 五大引擎均通过 `runSkill(id, input)` 调用，页面无任何直连模型代码。
-- [ ] 五大引擎均按统一 Workflow 节点执行，节点状态可追踪，失败可从最近检查点恢复，禁止重复创建任务。
+- [ ] 内容生成引擎均通过 `runSkill(id, input)` 调用，页面无任何直连模型代码。
+- [ ] 内容生成引擎均按统一 Workflow 节点执行，节点状态可追踪，失败可从最近检查点恢复，禁止重复创建任务。
 - [ ] 每个引擎的 `validate()` 覆盖全部必填字段与数值范围约束。
 - [ ] 失败结果均返回 `taskId` 与四类错误码之一，前端有对应分支处理。
 - [ ] 生成期间按 `skill.stages` 顺序渲染阶段动效，阶段数与定义一致。
@@ -1057,7 +1057,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ### 7.2 合规
 - [ ] `POST /api/knowledge/validate` 对 8 条规则全部可命中，评分符合 `100 - Σ(20/10/4)`。
 - [ ] 空内容返回 400；命中项返回完整 `advice` 与 `source`。
-- [ ] 五大引擎文本产出在返回前均调用该接口，`high` 级命中阻断发布。
+- [ ] 内容生成引擎文本产出在返回前均调用该接口，`high` 级命中阻断发布。
 
 ### 7.3 交互与健壮性
 - [ ] 断网、刷新、重复点击、浏览器返回后，页面状态不错乱、不重复提交。

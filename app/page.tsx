@@ -92,10 +92,10 @@ export default function WorkbenchPage() {
       {/* Quick create engines */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">五大生成引擎</h3>
+          <h3 className="text-sm font-semibold">内容生成引擎</h3>
           <span className="text-xs text-muted-foreground">选择引擎，快速创作</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {engines.map((e) => {
             const Icon = e.icon
             return (
