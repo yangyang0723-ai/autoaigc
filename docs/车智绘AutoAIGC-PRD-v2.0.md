@@ -118,9 +118,9 @@
 
 **统一工作流节点**：
 
-1. `validate_input`：校验必填字段、枚举值���数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
+1. `validate_input`：校验必填字段、枚举值、数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
 2. `create_task`：创建 `taskId` 与 `workflowRunId`，记录输入快照和幂等键。
-3. `prepare_context`：加载车型事实、品牌规范、用户素材���当前引擎参数，形成节点上下文。
+3. `prepare_context`：加载车型事实、品牌规范、用户素材、当前引擎参数，形成节点上下文。
 4. `compose_prompt`：根据上下文与引擎模板组装 Prompt 和结构化输出 Schema。
 5. `model_generate`：调用对应模型或模型链，支持超时、指数退避和最多 1 次自动重试。
 6. `parse_and_validate`：解析结构化结果，校验字段完整性、数量、尺寸、时长或页数等硬约束。
@@ -194,7 +194,7 @@
 export type SkillId = 'image' | 'text' | 'video' | 'ppt' | 'moments'
 
 export interface Skill<TInput, TOutput> {
-  meta: SkillMeta          // 引擎元��息
+  meta: SkillMeta          // 引擎元信息
   fields: SkillField[]     // 入参字段描述（驱动表单 / 校验 / 文档）
   stages: SkillStage[]     // 生成阶段（驱动 loading 动效）
   validate: (input: Partial<TInput>) => string[]   // 返回空数组代表通过
@@ -206,7 +206,7 @@ export interface SkillMeta {
   name: string
   description: string
   route: string        // 对应前端路由
-  frPrefix: string     // 需求编��前缀��与本文档对应
+  frPrefix: string     // 需求编号前缀，与本文档对应
   estimatedMs: number  // 预计耗时，用于前端进度条
 }
 
@@ -250,7 +250,7 @@ flowchart TD
   F --> G["Prompt 组装：system_prompt + 行业上下文 + user_prompt + output_schema"]
   G --> H[调用模型]
   H -- 超时 / 5xx --> H1[指数退避重试 ≤ 2 次，间隔 1s → 2s]
-  H1 -- 仍失败 --> H2[��回 MODEL_ERROR]
+  H1 -- 仍失败 --> H2[返回 MODEL_ERROR]
   H -- 限流 429 --> H3[返回 RATE_LIMITED]
   H -- 成功 --> I[按 TOutput JSON Schema 解析]
   I -- 解析失败 --> I1[重试 1 次 → 仍失败返回 MODEL_ERROR]
@@ -350,11 +350,11 @@ flowchart TD
 | 阶段 | 用户问题 | 内容策略 | 推荐 CTA | 禁止事项 |
 | --- | --- | --- | --- | --- |
 | 认知种草 | 这是什么车，为什么值得关注 | 讲清场景痛点、核心卖点与品牌差异 | 了解车型 / 收藏 | 夸大领先、贬低竞品、制造焦虑 |
-| 兴趣考虑 | 适合我和家庭吗 | 围绕人数、通勤、空间、智能、安全解释适配性 | 查看配置 / 获取资��� | 无依据判断用户需求 |
+| 兴趣考虑 | 适合我和家庭吗 | 围绕人数、通勤、空间、智能、安全解释适配性 | 查看配置 / 获取资料 | 无依据判断用户需求 |
 | 车型比较 | 和其他车怎么选 | 只比较有来源的维度，标注口径与时间 | 预约顾问对比 | 片面截取、虚构排名、绝对化结论 |
 | 试驾体验 | 开起来怎么样 | 真实试驾路线、功能操作、可验证证据 | 预约试驾 | 模拟用户评价、虚构体验数据 |
 | 购买决策 | 现在买需要什么信息 | 官方价格、金融、权益、库存、门店信息 | 咨询报价 / 预约到店 | 虚构限时、库存、优惠、保价承诺 |
-| 交付分享 | 提车后如何分享 | 交付节点、用车场景、真实车主模板 | 分享��车 / 联系门店 | 未授权使用车主身份或照片 |
+| 交付分享 | 提车后如何分享 | 交付节点、用车场景、真实车主模板 | 分享提车 / 联系门店 | 未授权使用车主身份或照片 |
 | 车主运营 | 如何持续服务 | 保养、活动、权益、复购的低打扰沟通 | 预约保养 / 查看权益 | 过度营销、诱导、泄露车主信息 |
 
 服务端将 `journey_stage`、`persona`、`channel`、`conversion_goal`、`brand_facts` 注入每套 Prompt；阶段与内容类型不匹配时返回校验提示而非自行猜测。输出需记录阶段字段，供按旅程分析生成、采纳、线索与成交转化。
@@ -391,7 +391,7 @@ flowchart TD
 | `style` | select | 科技感 / 写实商业 / 运动动感 / 豪华质感 / 国潮插画 | 科技感 |
 | `ratio` | select | 1:1 / 16:9 / 9:16 / 3:4 / 2.35:1 | 1:1 |
 | `count` | number | 1–8 | 4 |
-| `referenceImage` | text | 可��，参考图 URL | — |
+| `referenceImage` | text | 可选，参考图 URL | — |
 
 **比例映射 `RATIO_SIZE`**：`1:1→1024×1024`、`16:9→1280×720`、`9:16→720×1280`、`3:4→900×1200`、`2.35:1→1410×600`
 
@@ -449,7 +449,7 @@ flowchart TD
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析创作描述（提取车型/场景/卖点）→ 阶段2 匹配视觉风格（套用风格与色调）</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
-  <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：��觉总监角色 + 车型事实 + style/ratio + 输出 Schema</div>
+  <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：视觉总监角色 + 车型事实 + style/ratio + 输出 Schema</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:linear-gradient(135deg, rgba(139,200,234,0.12), rgba(139,200,234,0.22));border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段3 扩散模型并行生成 count 张</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
@@ -677,7 +677,7 @@ flowchart TD
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);font-size:12.5px;margin:6px 0;">validate：topic 非空 且 15 ≤ durationSec ≤ 60 <span style="color:#EA6668;font-weight:600;">｜失败 → INVALID_INPUT</span></div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
-  <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析脚本（���解卖点与叙事节奏）</div>
+  <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析脚本（拆解卖点与叙事节奏）</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：短视频导演角色 + vehicle_facts + type/voice + 分镜 Schema</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
@@ -758,7 +758,7 @@ PPT 生成页面、技能实现、导航入口及 FR-PPT 功能需求已从当�
 **大纲蓝图 `blueprint`**（按 `pages` 循环取用）
 `封面·标题页 (none)` → `市场背景与机会 (line)` → `核心卖点解析 (none)` → `竞品对比分析 (bar)` → `销量与目标 (pie)` → `行动计划·结语 (none)`。第 1 页标题固定使用用户输入的 `topic`。
 
-**生���阶段**：解析主题与受众 → 智能编排大纲 → 套用专业模板 → 数据可视化生成
+**生成阶段**：解析主题与受众 → 智能编排大纲 → 套用专业模板 → 数据可视化生成
 
 **功能需求**
 
@@ -902,9 +902,9 @@ flowchart TD
   B -- 通过 --> C[阶段1 解析场景与人设，结合每日内容日历]
   C --> D["Prompt 组装：销售顾问助手角色 + offer / store_info + persona 口吻 + 输出 Schema"]
   D --> E[阶段2 AI 文案撰写：共鸣开场 + 1 个核心福利点 + 咨询引导]
-  E --> F{"copy 长度 80–180 字 �� hashtags 3–5 个"}
+  E --> F{"copy 长度 80–180 字；hashtags 3–5 个"}
   F -- 不满足 --> F1[重试 1 次 → 仍失败 MODEL_ERROR]
-  F -- 满足 --> G[阶段3 智能配图匹���：按 imageSize 挑图并叠加水印]
+  F -- 满足 --> G[阶段3 智能配图匹配：按 imageSize 挑图并叠加水印]
   G --> H{"watermark 输出与用户勾选完全一致"}
   H -- 不一致 --> H1[标记异常，禁止自行追加二维码 / 电话 / Logo]
   H -- 一致 --> I[阶段4 合规润色校验]
@@ -991,7 +991,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 
 | 编号 | 需求 | 说明 |
 | --- | --- | --- |
-| FR-AST-001 | 文件夹树 | 左侧分类树，���持新建文件夹 |
+| FR-AST-001 | 文件夹树 | 左侧分类树，支持新建文件夹 |
 | FR-AST-002 | 存储容量展示 | 已用 / 总容量与进度条 |
 | FR-AST-003 | 搜索与筛选 | 按名称、标签、素材类型筛选 |
 | FR-AST-004 | 视图切换 | 网格 / 列表双视图 |
@@ -1020,7 +1020,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ### 6.1 性能
 - 首屏 LCP ≤ 2.5s；交互 INP ≤ 200ms；CLS ≤ 0.1。
 - 生成阶段动效必须在点击后 100ms 内出现。
-- 图片使�� `next/image`，视频封面懒加载。
+- 图片使用 `next/image`，视频封面懒加载。
 
 ### 6.2 可访问性
 - 所有图标按钮必须有 `aria-label`；弹层支持 Esc 关闭并锁定背景滚动。
@@ -1048,7 +1048,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ### 7.1 AI 调用链路
 - [ ] 内容生成引擎均通过 `runSkill(id, input)` 调用，页面无任何直连模型代码。
 - [ ] 内容生成引擎均按统一 Workflow 节点执行，节点状态可追踪，失败可从最近检查点恢复，禁止重复创建任务。
-- [ ] 每个引擎的 `validate()` 覆盖全部必��字段与数值范围约束。
+- [ ] 每个引擎的 `validate()` 覆盖全部必填字段与数值范围约束。
 - [ ] 失败结果均返回 `taskId` 与四类错误码之一，前端有对应分支处理。
 - [ ] 生成期间按 `skill.stages` 顺序渲染阶段动效，阶段数与定义一致。
 - [ ] 硬性数值约束（数量 / 字数 / 时长 / 页数 / 文案长度 / 水印一致性）在返回前二次校验。
@@ -1067,7 +1067,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 
 ---
 
-## 8. 迭代规���
+## 8. 迭代规划
 
 | 阶段 | 范围 | 关键交付 |
 | --- | --- | --- |
