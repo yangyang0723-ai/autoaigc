@@ -16,14 +16,14 @@
 ## 1. 产品定位与目标用户
 
 ### 1.1 产品定位
-面向汽车主机厂、经销商集团、4S 门店与一线销售顾问的 **AI 营销内容生成平台**。通过五大生成引擎，把原本需要设计、文案、剪辑多角色协作数小时的内容生产压缩到分钟级，并在生成链路内置汽车行业合规校验，实现「即生成、即合规」。
+面向汽车主机厂、经销商集团、4S 门店与一线销售顾问的 **AI 营销内容生成平台**。通过内容生成引擎，把原本需要设计、文案、剪辑多角色协作数小时的内容生产压缩到分钟级，并在生成链路内置汽车行业合规校验，实现「即生成、即合规」。
 
 ### 1.2 目标用户与核心诉求
 
 | 角色 | 典型场景 | 核心诉求 |
 | --- | --- | --- |
 | 主机厂市场部 | 新车上市、节点大促 | 统一品牌调性，批量产出多平台素材 |
-| 经销商集团市场负责人 | 区域活动、经营汇报 | 快速产出 PPT / 海报，掌握门店内容效果 |
+| 经销商集团市场负责人 | 区域活动、经营汇报 | 快速产出海报与多平台素材，掌握门店内容效果 |
 | 4S 店新媒体运营 | 公众号 / 小红书 / 抖音日更 | 低成本高频更新，平台调性自动适配 |
 | 一线销售顾问 | 每日朋友圈获客 | 3 步出图出文，带个人二维码，不违规 |
 | 合规 / 法务 | 内容风控 | 广告法、平台规则、行业规范三重自动拦截 |
@@ -32,7 +32,7 @@
 
 | 术语 | 说明 |
 | --- | --- |
-| 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / PPT / 朋友圈五类生成器，统一实现 `Skill` 接口 |
+| 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / 朋友圈四类生成器，统一实现 `Skill` 接口 |
 | taskId | 单次生成任务唯一标识，格式 `{skillId}_{base36时间戳}_{6位随机}`，失败也必须返回 |
 | 合规网关 | `POST /api/knowledge/validate`，对文本产出执行三重合规检测 |
 | 购车旅程阶段 | `journey_stage`，决定内容目标、信息密度与 CTA 类型 |
@@ -58,11 +58,11 @@
 车智绘 AutoAIGC
 ├─ 概览
 │   └─ /              工作台          数据总览与快捷创作            FR-HOME
-├─ 五大生成引擎
+├─ 内容生成引擎
 │   ├─ /image         AI 图片生成      海报 / 对比图 / 配图          FR-IMG
 │   ├─ /text          AI 图文生成      推文 / 种草 / 详情页          FR-TXT
 │   ├─ /video         AI 视频生成      口播 / 展示 / 切片            FR-VID
-│   ├─ /ppt           AI PPT 生成      发布会 / 培训 / 汇报          FR-PPT
+
 │   └─ /moments       朋友圈图文       一线销售快速发圈              FR-MOM
 ├─ 资产与数据
 │   ├─ /assets        素材资产管理     存储 / 检索 / 协作            FR-AST
@@ -87,7 +87,7 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│ 表现层  app/{image,text,video,ppt,moments}/page.tsx      │
+│ 表现层  app/{image,text,video,moments}/page.tsx      │
 │  · 由 skill.fields 驱动参数表单                           │
 │  · 由 skill.stages 驱动生成阶段动效                       │
 │  · 消费 SkillResult，渲染结果或错误分支                    │
@@ -95,7 +95,7 @@
                            │ runSkill(id, input)
 ┌──────────────────────────▼──────────────────────────────┐
 │ 调度层  lib/skills/index.ts                              │
-│  · skills 注册表（image/text/video/ppt/moments）          │
+│  · skills 注册表（image/text/video/moments）          │
 │  · getSkill(id) / runSkill(id, input) 动态调度            │
 │  · skillList 供导航、文档、选择器复用                      │
 └──────────────────────────┬──────────────────────────────┘
@@ -112,15 +112,15 @@
 
 **关键设计约束**：`run()` 当前为 mock（`simulateLatency` + 贴近真实的示例数据）。接入真实模型时**只替换 `run()` 内部实现，调用方代码零改动**——这是全平台接入真实 AI 的唯一改造点。
 
-### 3.2 五大生成引擎统一工作流模式
+### 3.2 内容生成引擎统一工作流模式
 
-五大生成引擎必须以工作流（Workflow）模式执行，不得将一次生成实现为单次无状态模型调用。每次生成创建一个 `workflowRunId`，由调度层按顺序执行可追踪的工作流节点，并将节点状态实时反馈到页面。
+内容生成引擎必须以工作流（Workflow）模式执行，不得将一次生成实现为单次无状态模型调用。每次生成创建一个 `workflowRunId`，由调度层按顺序执行可追踪的工作流节点，并将节点状态实时反馈到页面。
 
 **统一工作流节点**：
 
-1. `validate_input`：校验必填字段、枚举值���数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
+1. `validate_input`：校验必填字段、枚举值、数值范围与组织权限；失败立即返回 `INVALID_INPUT`。
 2. `create_task`：创建 `taskId` 与 `workflowRunId`，记录输入快照和幂等键。
-3. `prepare_context`：加载车型事实、品牌规范、用户素材和当前引擎参数，形成节点上下文。
+3. `prepare_context`：加载车型事实、品牌规范、用户素材、当前引擎参数，形成节点上下文。
 4. `compose_prompt`：根据上下文与引擎模板组装 Prompt 和结构化输出 Schema。
 5. `model_generate`：调用对应模型或模型链，支持超时、指数退避和最多 1 次自动重试。
 6. `parse_and_validate`：解析结构化结果，校验字段完整性、数量、尺寸、时长或页数等硬约束。
@@ -129,20 +129,19 @@
 
 **工作流要求**：节点必须有 `pending / running / succeeded / failed` 状态；后续节点只能消费前序节点的结构化输出；失败节点可从最近检查点恢复，禁止重复创建任务；每个引擎可在上述节点之间增加领域节点，但不得跳过输入校验、硬约束校验、合规校验和结果持久化。
 
-### 3.2.1 五大引擎统一工作流总览图
+### 3.2.1 内容生成引擎统一工作流总览图
 
 ```html type="renderer"
 <html style="margin:0;padding:0;">
 <div style="background-color:transparent;box-sizing:border-box;padding:16px;font-family:'PingFang SC','Segoe UI',Arial,sans-serif;color:#1A1B1C;">
-  <div style="font-size:15px;font-weight:600;margin-bottom:2px;">五大生成引擎 · 统一工作流总览</div>
+  <div style="font-size:15px;font-weight:600;margin-bottom:2px;">内容生成引擎 · 统一工作流总览</div>
   <div style="font-size:12px;color:#6B7280;margin-bottom:12px;">所有引擎经 runSkill(id, input) 动态调度，共享 8 节点 Workflow，领域差异仅出现在中间节点</div>
 
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 图片<br/>/image · FR-IMG</div>
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 图文<br/>/text · FR-TXT</div>
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 视频<br/>/video · FR-VID</div>
-    <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI PPT<br/>/ppt · FR-PPT</div>
-    <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">朋友圈图文<br/>/moments · FR-MOM</div>
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">朋友圈图文<br/>/moments · FR-MOM</div>
   </div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1.4;">▼ runSkill(id, input) 动态调度</div>
 
@@ -174,9 +173,7 @@
     <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
       <b style="color:#8BC8EA;">视频 · 领域节点</b><br/>解析脚本→智能分镜→数字人口播→卡点合成<br/><b>硬约束</b>：Σ durationSec=durationSec<br/><b>合规</b>：captions 事实来源
     </div>
-    <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
-      <b style="color:#8BC8EA;">PPT · 领域节点</b><br/>解析受众→编排大纲→套模板→数据可视化<br/><b>硬约束</b>：slides.length=pages<br/><b>合规</b>：图表口径/来源齐全
-    </div>
+
     <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
       <b style="color:#8BC8EA;">朋友圈 · 领域节点</b><br/>解析场景→文案→配图水印→合规润色<br/><b>硬约束</b>：copy 80-180字 / 水印一致<br/><b>合规</b>：库存/价格/案例来源
     </div>
@@ -197,7 +194,7 @@
 export type SkillId = 'image' | 'text' | 'video' | 'ppt' | 'moments'
 
 export interface Skill<TInput, TOutput> {
-  meta: SkillMeta          // 引擎元��息
+  meta: SkillMeta          // 引擎元信息
   fields: SkillField[]     // 入参字段描述（驱动表单 / 校验 / 文档）
   stages: SkillStage[]     // 生成阶段（驱动 loading 动效）
   validate: (input: Partial<TInput>) => string[]   // 返回空数组代表通过
@@ -240,7 +237,7 @@ const res = await imageSkill.run({ prompt: '蓝色科技SUV海报', style: '科�
 const res = await runSkill('ppt', { topic: '星海SUV上市发布', scene: '新车发布会', template: '科技蓝', pages: 6 })
 ```
 
-### 3.3 五大引擎共用的 AI 调用主流程
+### 3.3 内容生成引擎共用的 AI 调用主流程
 
 ```mermaid
 flowchart TD
@@ -348,16 +345,16 @@ flowchart TD
 
 ### 3.8 购车旅程注入规则
 
-五大引擎必须接收统一的 `journey_stage`，据此调整内容目标、信息密度与 CTA。枚举固定为：`awareness` · `consideration` · `comparison` · `test_drive` · `purchase` · `delivery` · `retention`。
+内容生成引擎必须接收统一的 `journey_stage`，据此调整内容目标、信息密度与 CTA。枚举固定为：`awareness` · `consideration` · `comparison` · `test_drive` · `purchase` · `delivery` · `retention`。
 
 | 阶段 | 用户问题 | 内容策略 | 推荐 CTA | 禁止事项 |
 | --- | --- | --- | --- | --- |
-| 认知种草 | 这是什么车，为什么值得��注 | 讲清场景痛点、核心卖点与品牌差异 | 了解车型 / 收藏 | 夸大领先、贬低竞品、制造焦虑 |
-| 兴趣考虑 | 适合我和家庭吗 | 围绕人数、通勤、空间、智能、安全解释适配性 | 查看配置 / 获取资��� | 无依据判断用户需求 |
+| 认知种草 | 这是什么车，为什么值得关注 | 讲清场景痛点、核心卖点与品牌差异 | 了解车型 / 收藏 | 夸大领先、贬低竞品、制造焦虑 |
+| 兴趣考虑 | 适合我和家庭吗 | 围绕人数、通勤、空间、智能、安全解释适配性 | 查看配置 / 获取资料 | 无依据判断用户需求 |
 | 车型比较 | 和其他车怎么选 | 只比较有来源的维度，标注口径与时间 | 预约顾问对比 | 片面截取、虚构排名、绝对化结论 |
 | 试驾体验 | 开起来怎么样 | 真实试驾路线、功能操作、可验证证据 | 预约试驾 | 模拟用户评价、虚构体验数据 |
 | 购买决策 | 现在买需要什么信息 | 官方价格、金融、权益、库存、门店信息 | 咨询报价 / 预约到店 | 虚构限时、库存、优惠、保价承诺 |
-| 交付分享 | 提车后如何分享 | 交付节点、用车场景、真实车主模板 | 分享交车 / 联系门店 | 未授权使用车主身份或照片 |
+| 交付分享 | 提车后如何分享 | 交付节点、用车场景、真实车主模板 | 分享提车 / 联系门店 | 未授权使用车主身份或照片 |
 | 车主运营 | 如何持续服务 | 保养、活动、权益、复购的低打扰沟通 | 预约保养 / 查看权益 | 过度营销、诱导、泄露车主信息 |
 
 服务端将 `journey_stage`、`persona`、`channel`、`conversion_goal`、`brand_facts` 注入每套 Prompt；阶段与内容类型不匹配时返回校验提示而非自行猜测。输出需记录阶段字段，供按旅程分析生成、采纳、线索与成交转化。
@@ -375,7 +372,7 @@ flowchart TD
 
 ---
 
-## 4. 五大生成引擎需求与 AI 调用流程
+## 4. 内容生成引擎需求与 AI 调用流程
 
 ### 4.1 AI 图片生成（`/image` · FR-IMG）
 
@@ -394,7 +391,7 @@ flowchart TD
 | `style` | select | 科技感 / 写实商业 / 运动动感 / 豪华质感 / 国潮插画 | 科技感 |
 | `ratio` | select | 1:1 / 16:9 / 9:16 / 3:4 / 2.35:1 | 1:1 |
 | `count` | number | 1–8 | 4 |
-| `referenceImage` | text | 可��，参考图 URL | — |
+| `referenceImage` | text | 可选，参考图 URL | — |
 
 **比例映射 `RATIO_SIZE`**：`1:1→1024×1024`、`16:9→1280×720`、`9:16→720×1280`、`3:4→900×1200`、`2.35:1→1410×600`
 
@@ -452,7 +449,7 @@ flowchart TD
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析创作描述（提取车型/场景/卖点）→ 阶段2 匹配视觉风格（套用风格与色调）</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
-  <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：��觉总监角色 + 车型事实 + style/ratio + 输出 Schema</div>
+  <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：视觉总监角色 + 车型事实 + style/ratio + 输出 Schema</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:linear-gradient(135deg, rgba(139,200,234,0.12), rgba(139,200,234,0.22));border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段3 扩散模型并行生成 count 张</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
@@ -730,9 +727,10 @@ flowchart TD
 
 ---
 
-### 4.4 AI PPT 生成（`/ppt` · FR-PPT）
+### 4.4 PPT 生成（已移除）
 
-**元信息**：`id: 'ppt'` · `estimatedMs: 3900` · 4 阶段
+PPT 生成页面、技能实现、导航入口及 FR-PPT 功能需求已从当前版本移除，不属于当前产品范围。
+
 
 **工作流模式**：按「输入校验 → 任务创建 → 主题与受众准备 → 大纲编排 → 模板渲染 → 数据可视化 → 结果校验 → 合规校验 → 持久化」节点执行，主题、大纲、模板和页面数据按节点依赖传递。
 
@@ -760,7 +758,7 @@ flowchart TD
 **大纲蓝图 `blueprint`**（按 `pages` 循环取用）
 `封面·标题页 (none)` → `市场背景与机会 (line)` → `核心卖点解析 (none)` → `竞品对比分析 (bar)` → `销量与目标 (pie)` → `行动计划·结语 (none)`。第 1 页标题固定使用用户输入的 `topic`。
 
-**生���阶段**：解析主题与受众 → 智能编排大纲 → 套用专业模板 → 数据可视化生成
+**生成阶段**：解析主题与受众 → 智能编排大纲 → 套用专业模板 → 数据可视化生成
 
 **功能需求**
 
@@ -904,7 +902,7 @@ flowchart TD
   B -- 通过 --> C[阶段1 解析场景与人设，结合每日内容日历]
   C --> D["Prompt 组装：销售顾问助手角色 + offer / store_info + persona 口吻 + 输出 Schema"]
   D --> E[阶段2 AI 文案撰写：共鸣开场 + 1 个核心福利点 + 咨询引导]
-  E --> F{"copy 长度 80–180 字 �� hashtags 3–5 个"}
+  E --> F{"copy 长度 80–180 字；hashtags 3–5 个"}
   F -- 不满足 --> F1[重试 1 次 → 仍失败 MODEL_ERROR]
   F -- 满足 --> G[阶段3 智能配图匹配：按 imageSize 挑图并叠加水印]
   G --> H{"watermark 输出与用户勾选完全一致"}
@@ -984,7 +982,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 | 编号 | 需求 | 说明 |
 | --- | --- | --- |
 | FR-HOME-001 | 平台概览 Hero | 展示平台定位与「开始创作」主 CTA，带点击反馈并跳转 |
-| FR-HOME-002 | 五大生成引擎入口 | 卡片陈列，hover 抬升 + 发光，点击进入对应引擎 |
+| FR-HOME-002 | 内容生成引擎入口 | 卡片陈列，hover 抬升 + 发光，点击进入对应引擎 |
 | FR-HOME-003 | 关键指标概览 | KPI 卡片摘要（生成量、耗时、通过率、复用率） |
 | FR-HOME-004 | 近 7 天生成趋势 | 趋势图表按自然日聚合，无数据日补 0；卡片在工作台主内容网格中占满整行，与其他主内容区域宽度一致，图表容器使用 100% 宽度响应式填充。 |
 | FR-HOME-005 | 设计系统组件展示 | 展示统一视觉规范下的组件样式（当前工作台页面不展示） |
@@ -993,7 +991,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 
 | 编号 | 需求 | 说明 |
 | --- | --- | --- |
-| FR-AST-001 | 文件夹树 | 左侧分类树，���持新建文件夹 |
+| FR-AST-001 | 文件夹树 | 左侧分类树，支持新建文件夹 |
 | FR-AST-002 | 存储容量展示 | 已用 / 总容量与进度条 |
 | FR-AST-003 | 搜索与筛选 | 按名称、标签、素材类型筛选 |
 | FR-AST-004 | 视图切换 | 网格 / 列表双视图 |
@@ -1003,7 +1001,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 | FR-AST-008 | 素材详情弹层 | 大图预览 + 元信息 + 下载/收藏/分享/重命名/删除；遮罩或 Esc 关闭并锁滚动 |
 | FR-AST-009 | 上传素材 | 顶部上传入口 |
 
-**与引擎的联动**：五大引擎生成成功后，`output` 中的图片 / 视频 / 文档资产自动写入素材库，并继承 `taskId`、引擎类型、生成参数、`journey_stage` 作为检索元数据。
+**与引擎的联动**：内容生成引擎生成成功后，`output` 中的图片 / 视频 / 文档资产自动写入素材库，并继承 `taskId`、引擎类型、生成参数、`journey_stage` 作为检索元数据。
 
 ### 5.3 数据分析中台（已移除）
 
@@ -1048,8 +1046,8 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ## 7. 验收标准
 
 ### 7.1 AI 调用链路
-- [ ] 五大引擎均通过 `runSkill(id, input)` 调用，页面无任何直连模型代码。
-- [ ] 五大引擎均按统一 Workflow 节点执行，节点状态可追踪，失败可从最近检查点恢复，禁止重复创建任务。
+- [ ] 内容生成引擎均通过 `runSkill(id, input)` 调用，页面无任何直连模型代码。
+- [ ] 内容生成引擎均按统一 Workflow 节点执行，节点状态可追踪，失败可从最近检查点恢复，禁止重复创建任务。
 - [ ] 每个引擎的 `validate()` 覆盖全部必填字段与数值范围约束。
 - [ ] 失败结果均返回 `taskId` 与四类错误码之一，前端有对应分支处理。
 - [ ] 生成期间按 `skill.stages` 顺序渲染阶段动效，阶段数与定义一致。
@@ -1059,7 +1057,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ### 7.2 合规
 - [ ] `POST /api/knowledge/validate` 对 8 条规则全部可命中，评分符合 `100 - Σ(20/10/4)`。
 - [ ] 空内容返回 400；命中项返回完整 `advice` 与 `source`。
-- [ ] 五大引擎文本产出在返回前均调用该接口，`high` 级命中阻断发布。
+- [ ] 内容生成引擎文本产出在返回前均调用该接口，`high` 级命中阻断发布。
 
 ### 7.3 交互与健壮性
 - [ ] 断网、刷新、重复点击、浏览器返回后，页面状态不错乱、不重复提交。
@@ -1069,7 +1067,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 
 ---
 
-## 8. 迭代规���
+## 8. 迭代规划
 
 | 阶段 | 范围 | 关键交付 |
 | --- | --- | --- |
