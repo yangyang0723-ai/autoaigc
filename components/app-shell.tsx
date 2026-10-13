@@ -3,16 +3,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { navGroups, flatNav } from '@/lib/nav'
+import { navGroups, flatNav, findParent, type NavItem } from '@/lib/nav'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Car,
   Search,
-  Sparkles,
   ChevronDown,
   PanelLeftClose,
   PanelLeft,
+  Building2,
 } from 'lucide-react'
 
 function Logo() {
@@ -23,7 +24,7 @@ function Logo() {
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-sm font-bold tracking-wide">车智绘</span>
-        <span className="text-[10px] text-muted-foreground">AutoAIGC Platform</span>
+        <span className="text-[10px] text-muted-foreground">AutoAIGC · 三期 GEO</span>
       </span>
     </Link>
   )
@@ -32,9 +33,33 @@ function Logo() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const current = flatNav.find((n) =>
-    n.href === '/' ? pathname === '/' : pathname.startsWith(n.href),
-  )
+  const [open, setOpen] = useState<Record<string, boolean>>({ '/content': true })
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
+
+  const current = flatNav.find((n) => isActive(n.href))
+  const parent = current ? findParent(current.href) : undefined
+
+  const rowClass = (active: boolean) =>
+    cn(
+      'group flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm transition-colors',
+      active
+        ? 'bg-primary/15 text-primary'
+        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground',
+    )
+
+  const renderIcon = (item: NavItem, active: boolean) => {
+    const Icon = item.icon
+    return (
+      <Icon
+        className={cn(
+          'size-[18px] shrink-0',
+          active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+        )}
+      />
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -65,27 +90,87 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
               <ul className="space-y-1">
                 {group.items.map((item) => {
-                  const active =
-                    item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
-                  const Icon = item.icon
+                  if (item.children) {
+                    const groupActive = item.children.some((c) => isActive(c.href))
+                    const expanded = open[item.href] ?? false
+
+                    if (collapsed) {
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            title={item.label}
+                            className={cn(rowClass(groupActive), 'justify-center')}
+                          >
+                            {renderIcon(item, groupActive)}
+                          </Link>
+                        </li>
+                      )
+                    }
+
+                    return (
+                      <li key={item.href}>
+                        <button
+                          type="button"
+                          aria-expanded={expanded}
+                          onClick={() => setOpen((s) => ({ ...s, [item.href]: !expanded }))}
+                          className={rowClass(groupActive && !expanded)}
+                        >
+                          {renderIcon(item, groupActive)}
+                          <span className="flex flex-1 flex-col">
+                            <span className="flex items-center gap-1.5 font-medium leading-tight">
+                              {item.label}
+                              {item.badge && (
+                                <Badge variant="accent" className="px-1.5 py-0 text-[10px]">
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground">{item.desc}</span>
+                          </span>
+                          <ChevronDown
+                            className={cn(
+                              'size-4 shrink-0 text-muted-foreground transition-transform',
+                              expanded && 'rotate-180',
+                            )}
+                          />
+                        </button>
+                        {expanded && (
+                          <ul className="ml-[18px] mt-1 space-y-0.5 border-l border-sidebar-border pl-2">
+                            {item.children.map((child) => {
+                              const active = isActive(child.href)
+                              return (
+                                <li key={child.href}>
+                                  <Link
+                                    href={child.href}
+                                    className={cn(
+                                      'flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13px] transition-colors',
+                                      active
+                                        ? 'bg-primary/15 text-primary'
+                                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground',
+                                    )}
+                                  >
+                                    <child.icon className="size-4 shrink-0" />
+                                    {child.label}
+                                  </Link>
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        )}
+                      </li>
+                    )
+                  }
+
+                  const active = isActive(item.href)
                   return (
                     <li key={item.href}>
                       <Link
                         href={item.href}
                         title={item.label}
-                        className={cn(
-                          'group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors',
-                          active
-                            ? 'bg-primary/15 text-primary'
-                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground',
-                        )}
+                        className={rowClass(active)}
                       >
-                        <Icon
-                          className={cn(
-                            'size-[18px] shrink-0',
-                            active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
-                          )}
-                        />
+                        {renderIcon(item, active)}
                         {!collapsed && (
                           <span className="flex flex-1 flex-col">
                             <span className="font-medium leading-tight">{item.label}</span>
@@ -135,15 +220,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {collapsed ? <PanelLeft className="size-5" /> : <PanelLeftClose className="size-5" />}
           </Button>
 
-          <div className="flex flex-col">
-            <h1 className="text-base font-semibold leading-tight">{current?.label ?? '工作台'}</h1>
-            <p className="hidden text-xs text-muted-foreground sm:block">{current?.desc}</p>
+          <div className="flex min-w-0 flex-col">
+            {parent && (
+              <span className="text-[11px] leading-tight text-muted-foreground">{parent.label}</span>
+            )}
+            <h1 className="truncate text-base font-semibold leading-tight">
+              {current?.label ?? '三期总览'}
+            </h1>
           </div>
+          <p className="hidden text-xs text-muted-foreground xl:block">{current?.desc}</p>
 
           <div className="ml-auto flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground lg:flex">
+            <div className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm sm:flex">
+              <Building2 className="size-4 text-primary" />
+              <span className="font-medium">星河汽车</span>
+              <span className="text-xs text-muted-foreground">新能源中大型 SUV</span>
+              <ChevronDown className="size-3.5 text-muted-foreground" />
+            </div>
+            <div className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground xl:flex">
               <Search className="size-4" />
-              <span className="pr-8">搜索素材、模板、车型…</span>
+              <span className="pr-6">搜索品牌词、平台、素材…</span>
               <kbd className="rounded border border-border bg-muted px-1.5 text-[10px]">⌘K</kbd>
             </div>
           </div>

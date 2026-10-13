@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '车智绘 — 汽车垂直领域 AI 营销素材生成管理平台',
+  title: '车智绘 三期 — GEO 品牌评估与 AI 内容创作平台',
   description:
-    '车智绘是面向汽车厂商、经销商及 4S 店的 AI 营销素材一站式生成管理平台，分钟级生成专业级图片、图文、视频与朋友圈内容。',
+    '车智绘三期在 AI 内容创作基础上，新增 GEO 品牌评估、多平台交叉报告、需求洞察、品牌知识库与 UGC 信源自动分发，帮助汽车品牌提升在各大 AI 搜索引擎中的可见度。',
   generator: 'v0.app',
 }
 
