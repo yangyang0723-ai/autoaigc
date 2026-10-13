@@ -4,19 +4,9 @@ import { useState } from 'react'
 import { ShieldCheck, ShieldAlert, ScanSearch, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import type { GuardRule } from '@/lib/brand-kb'
 
-type Rule = { claim: string; field: string; official: string; fix: string; kind: '参数冲突' | '禁用话术' }
-
-const rules: Rule[] = [
-  { claim: '续航高达 800km', field: 'CLTC 续航', official: '620 km', fix: 'CLTC 工况续航 620km', kind: '参数冲突' },
-  { claim: '3.5 秒', field: '百公里加速', official: '3.9 s', fix: '3.9 秒', kind: '参数冲突' },
-  { claim: 'L4 级自动驾驶', field: '智驾等级', official: '组合辅助驾驶（L2）', fix: 'L2 级组合辅助驾驶', kind: '禁用话术' },
-  { claim: '销量第一', field: '广告用语', official: '禁用绝对化用语', fix: '广受好评', kind: '禁用话术' },
-]
-
-const sample = '星河 S7 续航高达 800km，百公里加速 3.5 秒，拥有 L4 级自动驾驶，是同级销量第一的豪华 SUV。'
-
-export function VerifyPlayground() {
+export function VerifyPlayground({ rules, sample }: { rules: GuardRule[]; sample: string }) {
   const [text, setText] = useState(sample)
   const [checked, setChecked] = useState(false)
 

@@ -1,37 +1,56 @@
-const center = { x: 300, y: 180 }
+import type { Derived } from '@/lib/brand-kb'
 
-const branches = [
-  { label: '品牌介绍', x: 300, y: 48, leaves: [['定位', 150, 28], ['理念', 450, 28]] },
-  { label: '产品参数', x: 500, y: 130, leaves: [['S7 Max', 560, 70], ['S7 Pro', 570, 190]] },
-  { label: '资质专利', x: 450, y: 300, leaves: [['C-NCAP', 540, 330], ['热失控专利', 400, 346]] },
-  { label: '官方话术', x: 150, y: 300, leaves: [['续航话术', 60, 330], ['智驾话术', 200, 346]] },
-  { label: '常见问答', x: 100, y: 130, leaves: [['质保', 40, 70], ['充电', 30, 190]] },
-] as const
+const cx = 300
+const cy = 190
+const branchAngles = [-90, -18, 54, 126, 198]
 
-export function KnowledgeGraph() {
+function polar(angleDeg: number, rx: number, ry: number) {
+  const a = (angleDeg * Math.PI) / 180
+  return { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a), cos: Math.cos(a) }
+}
+
+function leafOffsets(n: number) {
+  if (n === 1) return [0]
+  if (n === 2) return [-11, 11]
+  return [-18, 0, 18]
+}
+
+export function KnowledgeGraph({ graph }: { graph: Derived['graph'] }) {
   return (
-    <svg viewBox="0 0 600 380" className="h-auto w-full" role="img" aria-label="星河汽车品牌知识图谱示意">
-      {branches.map((b) => (
-        <g key={b.label}>
-          <line x1={center.x} y1={center.y} x2={b.x} y2={b.y} className="stroke-primary/50" strokeWidth={1.5} />
-          {b.leaves.map(([name, lx, ly]) => (
-            <g key={name}>
-              <line x1={b.x} y1={b.y} x2={lx} y2={ly} className="stroke-border" strokeWidth={1} />
-              <circle cx={lx} cy={ly} r={5} className="fill-accent" />
-              <text x={lx} y={ly - 10} textAnchor="middle" className="fill-muted-foreground text-[11px]">
-                {name}
-              </text>
-            </g>
-          ))}
-          <circle cx={b.x} cy={b.y} r={22} className="fill-card stroke-primary" strokeWidth={1.5} />
-          <text x={b.x} y={b.y + 4} textAnchor="middle" className="fill-foreground text-[11px] font-medium">
-            {b.label}
-          </text>
-        </g>
-      ))}
-      <circle cx={center.x} cy={center.y} r={38} className="fill-primary" />
-      <text x={center.x} y={center.y + 5} textAnchor="middle" className="fill-primary-foreground text-sm font-bold">
-        星河汽车
+    <svg viewBox="0 0 600 380" className="h-auto w-full" role="img" aria-label={`${graph.center} 品牌知识图谱`}>
+      {graph.branches.map((b, i) => {
+        const angle = branchAngles[i]
+        const node = polar(angle, 108, 70)
+        const empty = b.leaves.length === 0
+        const offsets = leafOffsets(b.leaves.length)
+        return (
+          <g key={b.label} opacity={empty ? 0.45 : 1}>
+            <line x1={cx} y1={cy} x2={node.x} y2={node.y} className="stroke-primary/50" strokeWidth={1.5} strokeDasharray={empty ? '4 4' : undefined} />
+            {b.leaves.map((leaf, j) => {
+              const p = polar(angle + offsets[j], 192, 146)
+              const side = Math.abs(p.cos) < 0.35 ? 'middle' : p.cos > 0 ? 'start' : 'end'
+              const dx = side === 'middle' ? 0 : p.cos > 0 ? 10 : -10
+              const dy = side === 'middle' ? (p.y < cy ? -11 : 20) : 5
+              return (
+                <g key={`${leaf}-${j}`}>
+                  <line x1={node.x} y1={node.y} x2={p.x} y2={p.y} className="stroke-border" strokeWidth={1} />
+                  <circle cx={p.x} cy={p.y} r={5} className="fill-accent" />
+                  <text x={p.x + dx} y={p.y + dy} textAnchor={side} className="fill-muted-foreground text-[13px]">
+                    {leaf}
+                  </text>
+                </g>
+              )
+            })}
+            <circle cx={node.x} cy={node.y} r={28} className="fill-card stroke-primary" strokeWidth={1.5} />
+            <text x={node.x} y={node.y + 4} textAnchor="middle" className="fill-foreground text-[12px] font-medium">
+              {b.label}
+            </text>
+          </g>
+        )
+      })}
+      <circle cx={cx} cy={cy} r={42} className="fill-primary" />
+      <text x={cx} y={cy + 5} textAnchor="middle" className="fill-primary-foreground text-[15px] font-bold">
+        {graph.center.length > 6 ? `${graph.center.slice(0, 6)}…` : graph.center}
       </text>
     </svg>
   )
