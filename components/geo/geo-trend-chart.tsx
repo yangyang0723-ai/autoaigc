@@ -27,8 +27,10 @@ const metrics: Record<MetricKey, { label: string; start: number; end: number; co
 const DIP_FROM = 17
 const DIP_TO = 19
 
-function buildSeries(key: MetricKey) {
-  const m = metrics[key]
+function buildSeries(key: MetricKey, finals?: Partial<Record<MetricKey, number>>) {
+  const base = metrics[key]
+  const end = finals?.[key] ?? base.end
+  const m = { ...base, end, start: end - (base.end - base.start) }
   return Array.from({ length: 30 }, (_, i) => {
     const d = new Date(2026, 8, 14 + i)
     const label = `${d.getMonth() + 1}/${d.getDate()}`
@@ -39,9 +41,17 @@ function buildSeries(key: MetricKey) {
   })
 }
 
-export function GeoTrendChart({ defaultMetric = 'mention' }: { defaultMetric?: MetricKey }) {
+export function GeoTrendChart({
+  defaultMetric = 'mention',
+  brandName = '星河汽车',
+  finals,
+}: {
+  defaultMetric?: MetricKey
+  brandName?: string
+  finals?: Partial<Record<MetricKey, number>>
+}) {
   const [metric, setMetric] = useState<MetricKey>(defaultMetric)
-  const data = useMemo(() => buildSeries(metric), [metric])
+  const data = useMemo(() => buildSeries(metric, finals), [metric, finals])
 
   return (
     <div>
@@ -79,7 +89,7 @@ export function GeoTrendChart({ defaultMetric = 'mention' }: { defaultMetric?: M
             <Line
               type="monotone"
               dataKey="brand"
-              name="星河汽车"
+              name={brandName}
               stroke="var(--chart-1)"
               strokeWidth={2.5}
               dot={false}

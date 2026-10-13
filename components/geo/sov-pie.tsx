@@ -3,7 +3,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { seriesColors, tooltipStyle } from '@/lib/chart-style'
 
-const sov = [
+const defaultSov = [
   { name: '星河汽车', value: 28.4 },
   { name: '极光汽车', value: 24.1 },
   { name: '远山汽车', value: 19.3 },
@@ -12,7 +12,7 @@ const sov = [
   { name: '其他', value: 4.5 },
 ]
 
-export function SovPie() {
+export function SovPie({ data: sov = defaultSov }: { data?: { name: string; value: number }[] }) {
   return (
     <div className="flex flex-col items-center gap-4 sm:flex-row lg:flex-col xl:flex-row">
       <div className="relative h-48 w-48 shrink-0">
@@ -27,7 +27,7 @@ export function SovPie() {
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-mono text-xl font-bold">28.4%</span>
+          <span className="font-mono text-xl font-bold">{sov[0].value}%</span>
           <span className="text-[11px] text-muted-foreground">本品 SOV</span>
         </div>
       </div>

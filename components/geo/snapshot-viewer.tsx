@@ -6,23 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-type Seg = { t: string; hl?: 'brand' | 'comp' }
-type Kind = '主动推荐' | '单纯提及' | '未提及'
-type Tone = '正面' | '中性' | '负面'
+import type { EvalSnapshot as Snapshot, Kind, Tone } from '@/lib/geo-eval'
 
-type Snapshot = {
-  id: string
-  platform: string
-  question: string
-  time: string
-  hits: number
-  kind: Kind
-  tone: Tone
-  rank: string[]
-  body: Seg[]
-}
-
-const snapshots: Snapshot[] = [
+const defaultSnapshots: Snapshot[] = [
   {
     id: 'SNP-20261013-0412',
     platform: 'DeepSeek',
@@ -106,7 +92,13 @@ const toneVariant: Record<Tone, 'success' | 'muted' | 'danger'> = {
   负面: 'danger',
 }
 
-export function SnapshotViewer() {
+export function SnapshotViewer({
+  snapshots = defaultSnapshots,
+  brandName = '星河汽车',
+}: {
+  snapshots?: Snapshot[]
+  brandName?: string
+}) {
   const [activeId, setActiveId] = useState(snapshots[0].id)
   const active = snapshots.find((s) => s.id === activeId) ?? snapshots[0]
 
@@ -202,7 +194,7 @@ export function SnapshotViewer() {
               {active.rank.map((b, i) => (
                 <li key={b} className="flex items-center gap-1.5">
                   <span className="font-mono text-muted-foreground">{i + 1}.</span>
-                  <span className={b === '星河汽车' ? 'font-medium text-primary' : ''}>{b}</span>
+                  <span className={b === brandName ? 'font-medium text-primary' : ''}>{b}</span>
                 </li>
               ))}
             </ol>
