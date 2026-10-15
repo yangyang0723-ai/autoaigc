@@ -14,7 +14,7 @@ import { initialBrands, type Brand } from '@/lib/brands'
 import { generateReport, SAMPLES_PER_PROBE, type EvalReport } from '@/lib/geo-eval'
 import { cn } from '@/lib/utils'
 
-function StepSection({
+export function StepSection({
   index,
   title,
   desc,
@@ -57,7 +57,7 @@ function StepSection({
   )
 }
 
-function FieldLabel({ children, extra, required }: { children: React.ReactNode; extra?: React.ReactNode; required?: boolean }) {
+export function FieldLabel({ children, extra, required }: { children: React.ReactNode; extra?: React.ReactNode; required?: boolean }) {
   return (
     <div className="mb-2 flex items-center justify-between gap-3">
       <span className="text-xs font-medium">

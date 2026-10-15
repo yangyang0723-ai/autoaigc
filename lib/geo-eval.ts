@@ -72,7 +72,7 @@ export type EvalReport = {
   grade: { label: string; variant: 'success' | 'warning' | 'danger' }
 }
 
-function hash(s: string) {
+export function hash(s: string) {
   let h = 2166136261
   for (let i = 0; i < s.length; i += 1) {
     h ^= s.charCodeAt(i)
@@ -81,7 +81,7 @@ function hash(s: string) {
   return h >>> 0
 }
 
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   let a = seed
   return () => {
     a |= 0
@@ -92,10 +92,10 @@ function mulberry32(seed: number) {
   }
 }
 
-const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
-const r1 = (v: number) => Math.round(v * 10) / 10
-const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
-const pad = (n: number) => String(n).padStart(2, '0')
+export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+export const r1 = (v: number) => Math.round(v * 10) / 10
+export const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
+export const pad = (n: number) => String(n).padStart(2, '0')
 
 function buildSnapshot(
   kw: string,

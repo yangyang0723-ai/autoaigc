@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { BadgeCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Segmented } from '@/components/geo/segmented'
-import { diffDims, type DiffStatus } from '@/lib/cross-data'
+import type { DiffStatus } from '@/lib/cross-data'
+import type { BrandResult } from '@/lib/cross-eval'
 
 const statusVariant: Record<DiffStatus, 'success' | 'warning' | 'danger' | 'muted'> = {
   一致: 'success',
@@ -13,22 +14,24 @@ const statusVariant: Record<DiffStatus, 'success' | 'warning' | 'danger' | 'mute
   缺失: 'muted',
 }
 
-export function DescriptionDiff() {
-  const [dim, setDim] = useState(diffDims[0].dim)
-  const active = diffDims.find((d) => d.dim === dim) ?? diffDims[0]
+export function DescriptionDiff({ brand }: { brand: BrandResult }) {
+  const [dim, setDim] = useState(brand.diffs[0].dim)
+  const active = brand.diffs.find((d) => d.dim === dim) ?? brand.diffs[0]
 
   return (
     <div className="flex flex-col gap-4">
       <Segmented
-        value={dim}
+        value={active.dim}
         onChange={setDim}
         aria-label="描述维度"
-        options={diffDims.map((d) => ({ value: d.dim, label: d.dim }))}
+        options={brand.diffs.map((d) => ({ value: d.dim, label: d.dim }))}
       />
       <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/10 p-3">
         <BadgeCheck className="mt-0.5 size-4 shrink-0 text-primary" />
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">品牌知识库 · 官方口径</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+            品牌知识库 · {brand.name} 官方口径
+          </p>
           <p className="mt-0.5 text-sm font-medium">{active.official}</p>
         </div>
       </div>

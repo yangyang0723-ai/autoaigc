@@ -2,14 +2,24 @@ import { Archive, BrainCircuit, Check, Library, Loader2, Repeat } from 'lucide-r
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-const steps = [
+export const defaultSteps = [
   { icon: Library, label: '构建探针 Prompt', desc: '按标准词库口径生成探针问题' },
   { icon: Repeat, label: '多平台批量采样', desc: '模拟真实用户，同题多次采样' },
   { icon: BrainCircuit, label: 'NLP 语义解析', desc: '识别推荐品牌、顺位与情感' },
   { icon: Archive, label: '生成报告并留存快照', desc: '汇总指标，留存原始回答' },
 ]
 
-export function EvalProgress({ progress, samplesTotal }: { progress: number; samplesTotal: number }) {
+export function EvalProgress({
+  progress,
+  samplesTotal,
+  title = '正在评估，请稍候…',
+  steps = defaultSteps,
+}: {
+  progress: number
+  samplesTotal: number
+  title?: string
+  steps?: typeof defaultSteps
+}) {
   const current = Math.min(steps.length - 1, Math.floor(progress / 25))
   const done = Math.round((samplesTotal * progress) / 100)
 
@@ -18,7 +28,7 @@ export function EvalProgress({ progress, samplesTotal }: { progress: number; sam
       <CardContent className="p-6" role="status" aria-live="polite">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold">正在评估，请稍候…</p>
+            <p className="text-sm font-semibold">{title}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               已完成 <span className="font-mono text-foreground">{done}</span> / {samplesTotal} 次探针采样
             </p>
