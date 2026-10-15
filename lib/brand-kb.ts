@@ -300,7 +300,7 @@ export function deriveKnowledge(b: BrandDraft & { customRules?: GuardRule[]; ver
   }
 }
 
-const seedBrands: BrandProfile[] = [
+export const seedBrands: BrandProfile[] = [
   {
     id: 'xinghe',
     name: '星河汽车',

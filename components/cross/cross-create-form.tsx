@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BarChart3, BrainCircuit, Archive, Layers, Loader2, Play, Repeat, Wand2, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { useRouter } from 'next/navigation'
+import { Archive, BrainCircuit, Layers, Loader2, Repeat, Save, Wand2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { KeywordInput } from '@/components/geo/keyword-input'
@@ -10,9 +10,9 @@ import { PlatformPicker } from '@/components/geo/platform-picker'
 import { EvalProgress } from '@/components/geo/eval-progress'
 import { FieldLabel, StepSection } from '@/components/geo/geo-workbench'
 import { BrandMultiPicker } from '@/components/cross/brand-multi-picker'
-import { CrossReportView } from '@/components/cross/cross-report-view'
 import { useBrands } from '@/lib/brand-kb'
-import { generateCrossReport, MAX_BRANDS, SAMPLES_PER_PROBE, type CrossReport } from '@/lib/cross-eval'
+import { generateCrossReport, MAX_BRANDS, SAMPLES_PER_PROBE } from '@/lib/cross-eval'
+import { addCrossReport, SEED_KEYWORDS } from '@/lib/cross-store'
 import { cn } from '@/lib/utils'
 
 const progressSteps = [
@@ -22,31 +22,16 @@ const progressSteps = [
   { icon: Archive, label: '生成交叉报告', desc: '汇总对比矩阵、差异与薄弱点' },
 ]
 
-const SEED_BRAND_IDS = ['xinghe', 'chenxi']
-const SEED_KEYWORDS = ['30万以内纯电SUV推荐', '家用新能源车怎么选', '纯电车冬季续航哪款好']
-const SEED_PLATFORMS = ['deepseek', 'doubao', 'qwen', 'wenxin', 'kimi', 'yuanbao']
-const SEED_TIME = new Date(2026, 9, 15, 9, 30)
-
-export function CrossWorkbench() {
+export function CrossCreateForm() {
+  const router = useRouter()
   const profiles = useBrands()
 
   const [brandIds, setBrandIds] = useState<string[]>([])
   const [keywords, setKeywords] = useState<string[]>([])
   const [platformIds, setPlatformIds] = useState<string[]>([])
-
-  const [reports, setReports] = useState<CrossReport[]>(() => {
-    const seeds = profiles.filter((b) => SEED_BRAND_IDS.includes(b.id))
-    return seeds.length
-      ? [generateCrossReport({ brands: seeds, keywords: SEED_KEYWORDS, platformIds: SEED_PLATFORMS, now: SEED_TIME })]
-      : []
-  })
-  const [activeId, setActiveId] = useState<string | null>(() => reports[0]?.id ?? null)
-
   const [status, setStatus] = useState<'idle' | 'running'>('idle')
   const [progress, setProgress] = useState(0)
   const timer = useRef<number | null>(null)
-  const reportRef = useRef<HTMLDivElement>(null)
-  const justCreated = useRef(false)
 
   const selectedBrands = useMemo(
     () => brandIds.flatMap((id) => profiles.filter((b) => b.id === id)),
@@ -55,9 +40,8 @@ export function CrossWorkbench() {
   const running = status === 'running'
   const isCross = selectedBrands.length >= 2 || platformIds.length >= 2
   const ready = selectedBrands.length > 0 && keywords.length > 0 && platformIds.length > 0
-  const canRun = ready && isCross && !running
+  const canSave = ready && isCross && !running
   const samplesTotal = selectedBrands.length * keywords.length * platformIds.length * SAMPLES_PER_PROBE
-  const active = reports.find((r) => r.id === activeId) ?? null
 
   const missing = useMemo(() => {
     const list: string[] = []
@@ -77,36 +61,23 @@ export function CrossWorkbench() {
   useEffect(() => {
     if (status !== 'running' || progress < 100) return
     if (timer.current) window.clearInterval(timer.current)
-    const created = generateCrossReport({ brands: selectedBrands, keywords, platformIds, now: new Date() })
-    justCreated.current = true
-    setReports((prev) => [created, ...prev])
-    setActiveId(created.id)
-    setStatus('idle')
-  }, [progress, status, selectedBrands, keywords, platformIds])
+    addCrossReport(generateCrossReport({ brands: selectedBrands, keywords, platformIds, now: new Date() }))
+    router.push('/cross-report')
+  }, [progress, status, selectedBrands, keywords, platformIds, router])
 
-  useEffect(() => {
-    if (justCreated.current && status === 'idle') {
-      justCreated.current = false
-      reportRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [status, activeId])
-
-  function run() {
-    if (!canRun) return
+  function save() {
+    if (!canSave) return
     setProgress(0)
     setStatus('running')
     timer.current = window.setInterval(() => setProgress((p) => Math.min(100, p + 2.5)), 90)
   }
 
-  function removeReport(id: string) {
-    const next = reports.filter((r) => r.id !== id)
-    setReports(next)
-    if (activeId === id) setActiveId(next[0]?.id ?? null)
+  function cancel() {
+    router.push('/cross-report')
   }
 
   function fillExample() {
-    const ids = profiles.slice(0, 2).map((b) => b.id)
-    setBrandIds(ids)
+    setBrandIds(profiles.slice(0, 2).map((b) => b.id))
     setKeywords(SEED_KEYWORDS)
     setPlatformIds(['deepseek', 'doubao', 'qwen', 'kimi'])
   }
@@ -167,81 +138,32 @@ export function CrossWorkbench() {
                 <>请先完成：{missing.join('、')}</>
               )}
             </div>
-            <Button size="lg" onClick={run} disabled={!canRun} className={cn('h-10 px-5 text-sm', canRun && 'glow-primary')}>
-              {running ? <Loader2 className="animate-spin" /> : <Play />}
-              {running ? '生成中…' : '创建交叉报告'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="lg" onClick={cancel} disabled={running} className="h-10 px-4 text-sm">
+                取消
+              </Button>
+              <Button
+                size="lg"
+                onClick={save}
+                disabled={!canSave}
+                className={cn('h-10 px-5 text-sm', canSave && 'glow-primary')}
+              >
+                {running ? <Loader2 className="animate-spin" /> : <Save />}
+                {running ? '生成中…' : '保存并生成报告'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <div ref={reportRef} className="flex scroll-mt-20 flex-col gap-6">
-        {running && (
-          <EvalProgress
-            progress={progress}
-            samplesTotal={samplesTotal}
-            title="正在创建交叉报告，请稍候…"
-            steps={progressSteps}
-          />
-        )}
-
-        {!running && reports.length > 0 && (
-          <section aria-label="已创建的交叉报告">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">已创建的交叉报告</h3>
-              <Badge variant="muted">{reports.length} 份</Badge>
-            </div>
-            <ul className="flex flex-wrap gap-2.5">
-              {reports.map((r) => {
-                const on = r.id === activeId
-                return (
-                  <li
-                    key={r.id}
-                    className={cn(
-                      'flex items-stretch overflow-hidden rounded-xl border transition-colors',
-                      on ? 'border-primary/50 bg-primary/10' : 'border-border bg-card hover:bg-muted/60',
-                    )}
-                  >
-                    <button
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => setActiveId(r.id)}
-                      className="px-3.5 py-2.5 text-left"
-                    >
-                      <span className="block max-w-72 truncate text-sm font-medium">{r.name}</span>
-                      <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                        {r.createdAt} · {r.brands.length} 品牌 · {r.keywords.length} 词 · {r.platforms.length} 平台
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`删除报告 ${r.name}`}
-                      onClick={() => removeReport(r.id)}
-                      className="flex w-8 items-center justify-center border-l border-border/60 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
-        )}
-
-        {!running && active && <CrossReportView key={active.id} report={active} />}
-
-        {!running && !active && (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border px-6 py-12 text-center">
-            <span className="flex size-12 items-center justify-center rounded-xl bg-primary/12 text-primary">
-              <BarChart3 className="size-6" />
-            </span>
-            <p className="text-sm font-semibold">交叉报告将在这里生成</p>
-            <p className="max-w-md text-pretty text-xs leading-relaxed text-muted-foreground">
-              选择多个品牌、关键词与平台后点击“创建交叉报告”，将输出品牌 × 平台对比、能力雷达、热力矩阵、描述差异对照与薄弱点建议。
-            </p>
-          </div>
-        )}
-      </div>
+      {running && (
+        <EvalProgress
+          progress={progress}
+          samplesTotal={samplesTotal}
+          title="正在创建交叉报告，请稍候…"
+          steps={progressSteps}
+        />
+      )}
     </div>
   )
 }
