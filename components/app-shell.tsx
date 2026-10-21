@@ -38,9 +38,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/')
 
-  const current = flatNav
-    .filter((n) => isActive(n.href))
-    .sort((a, b) => b.href.length - a.href.length)[0]
+  const current = flatNav.find((n) => isActive(n.href))
   const parent = current ? findParent(current.href) : undefined
 
   const rowClass = (active: boolean) =>
@@ -94,7 +92,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {group.items.map((item) => {
                   if (item.children) {
                     const groupActive = item.children.some((c) => isActive(c.href))
-                    const expanded = open[item.href] ?? groupActive
+                    const expanded = open[item.href] ?? false
 
                     if (collapsed) {
                       return (
@@ -140,7 +138,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         {expanded && (
                           <ul className="ml-[18px] mt-1 space-y-0.5 border-l border-sidebar-border pl-2">
                             {item.children.map((child) => {
-                              const active = current?.href === child.href
+                              const active = isActive(child.href)
                               return (
                                 <li key={child.href}>
                                   <Link

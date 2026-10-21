@@ -9,14 +9,10 @@ export function KeywordInput({
   keywords,
   onChange,
   max = 10,
-  noun = '关键词',
-  placeholder,
 }: {
   keywords: string[]
   onChange: (next: string[]) => void
   max?: number
-  noun?: string
-  placeholder?: string
 }) {
   const [draft, setDraft] = useState('')
   const [notice, setNotice] = useState('')
@@ -47,7 +43,7 @@ export function KeywordInput({
     }
     onChange(next)
     setDraft('')
-    setNotice(skippedMax ? `最多添加 ${max} 个${noun}` : skippedDup ? `已自动忽略重复${noun}` : '')
+    setNotice(skippedMax ? `最多添加 ${max} 个关键词` : skippedDup ? '已自动忽略重复关键词' : '')
   }
 
   function remove(kw: string) {
@@ -70,7 +66,7 @@ export function KeywordInput({
             <button
               type="button"
               onClick={() => remove(kw)}
-              aria-label={`移除${noun} ${kw}`}
+              aria-label={`移除关键词 ${kw}`}
               className="flex size-4 items-center justify-center rounded text-primary/70 hover:bg-primary/20 hover:text-primary"
             >
               <X className="size-3" />
@@ -102,13 +98,13 @@ export function KeywordInput({
             }
           }}
           disabled={keywords.length >= max && !draft}
-          placeholder={keywords.length ? '继续输入…' : (placeholder ?? '输入关键词，回车添加，如：30万以内纯电SUV推荐')}
+          placeholder={keywords.length ? '继续输入…' : '输入关键词，回车添加，如：30万以内纯电SUV推荐'}
           className="min-w-40 flex-1 bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
         />
       </label>
       <div className="mt-1.5 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
         <span className={notice ? 'text-amber-400' : ''} role="status">
-          {notice || `回车或逗号分隔，支持粘贴多个${noun}`}
+          {notice || '回车或逗号分隔，支持粘贴多个关键词'}
         </span>
         <span className="font-mono">
           {keywords.length}/{max}

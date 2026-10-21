@@ -13,8 +13,6 @@ import {
   Telescope,
   Library,
   Share2,
-  Send,
-  Users,
 } from 'lucide-react'
 
 export type NavItem = {
@@ -67,21 +65,6 @@ export const contentChildren: NavItem[] = [
     label: '素材资产管理',
     desc: '存储 / 检索 / 协作',
     icon: FolderKanban,
-  },
-]
-
-export const ugcChildren: NavItem[] = [
-  {
-    href: '/ugc',
-    label: '分发工作台',
-    desc: '任务编排与发布队列',
-    icon: Send,
-  },
-  {
-    href: '/ugc/accounts',
-    label: '多平台账号矩阵管理',
-    desc: '分组标签 / 健康度 / 权限',
-    icon: Users,
   },
 ]
 
@@ -142,7 +125,6 @@ export const navGroups: NavGroup[] = [
         label: 'UGC 信源分发',
         desc: '多平台矩阵自动发布',
         icon: Share2,
-        children: ugcChildren,
       },
     ],
   },

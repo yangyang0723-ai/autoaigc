@@ -14,3 +14,27 @@ export const initialJobs: Job[] = [
   { id: 10, title: '家庭第二辆车，我为什么选了纯电 SUV', platform: '小红书', account: '星河车主说', time: '昨天 19:30', stage: '已发布' },
   { id: 11, title: '一图看懂星河 S7 配置与价格', platform: '公众号', account: '星河汽车官方', time: '周一 08:00', stage: '已发布' },
 ]
+
+
+export type Account = {
+  platform: string
+  name: string
+  persona: string
+  fans: string
+  state: '正常' | '限流' | '待授权'
+  plan: number
+  index: string
+}
+
+export const accounts: Account[] = [
+  { platform: '小红书', name: '星河车主说', persona: '真实车主 · 用车日记', fans: '8.2 万', state: '正常', plan: 6, index: '78%' },
+  { platform: '小红书', name: '通勤日记', persona: '城市通勤 · 效率向', fans: '3.6 万', state: '正常', plan: 4, index: '71%' },
+  { platform: '小红书', name: '亲子出行手册', persona: '家庭用户 · 亲子场景', fans: '5.1 万', state: '限流', plan: 3, index: '54%' },
+  { platform: '知乎', name: '新能源老张', persona: '行业答主 · 深度测评', fans: '12.4 万', state: '正常', plan: 5, index: '86%' },
+  { platform: '知乎', name: '车评人阿木', persona: '对比选型 · 数据派', fans: '6.8 万', state: '正常', plan: 4, index: '82%' },
+  { platform: '抖音', name: '星河小智', persona: '品牌官方 · 科普口播', fans: '21.7 万', state: '正常', plan: 7, index: '63%' },
+  { platform: '抖音', name: '路上的星河', persona: '场景实拍 · 冬季/长途', fans: '9.3 万', state: '待授权', plan: 0, index: '—' },
+  { platform: '公众号', name: '星河汽车官方', persona: '品牌官方 · 深度图文', fans: '34.5 万', state: '正常', plan: 3, index: '91%' },
+  { platform: '公众号', name: '星河车主会', persona: '车主社群 · 活动资讯', fans: '4.9 万', state: '正常', plan: 2, index: '68%' },
+]
+
