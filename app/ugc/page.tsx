@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import { buttonVariants } from '@/components/ui/button'
 import { PageHero } from '@/components/geo/page-hero'
 import { StatCard } from '@/components/geo/stat-card'
 import { UgcBoard } from '@/components/ugc/ugc-board'
@@ -23,10 +24,10 @@ export default function UgcPage() {
         title="批量搭建 UGC 信源矩阵，为大模型提供可采信的第三方口碑"
         desc="把创作好的内容自动发布到各大社媒平台，支持多账号矩阵、定时发布、草稿预审与分平台差异化分发，并把收录与传播数据回流至 GEO 监测。"
       >
-        <Button size="lg">
+        <Link href="/ugc/new" className={buttonVariants({ size: 'lg' })}>
           <Plus />
           新建分发任务
-        </Button>
+        </Link>
       </PageHero>
 
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
