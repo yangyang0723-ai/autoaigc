@@ -5,7 +5,7 @@ import { CalendarClock, Check, X, Hash, Clock3, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Segmented } from '@/components/geo/segmented'
-import { accounts, type Stage } from '@/lib/ugc-data'
+import type { Stage } from '@/lib/ugc-data'
 import { removeJob, setJobStage, useJobs } from '@/lib/ugc-store'
 
 const stages: Stage[] = ['草稿预审', '已定时', '发布中', '已发布']
@@ -15,8 +15,6 @@ const stageVariant: Record<Stage, 'warning' | 'default' | 'accent' | 'success'> 
   发布中: 'accent',
   已发布: 'success',
 }
-
-const stateVariant = { 正常: 'success', 限流: 'warning', 待授权: 'danger' } as const
 
 const adaptations = [
   {
@@ -58,7 +56,7 @@ const adaptations = [
 ]
 
 export function UgcBoard() {
-  const [tab, setTab] = useState<'queue' | 'accounts' | 'adapt'>('queue')
+  const [tab, setTab] = useState<'queue' | 'adapt'>('queue')
   const jobs = useJobs()
   const [adaptPlatform, setAdaptPlatform] = useState('小红书')
 
@@ -75,7 +73,6 @@ export function UgcBoard() {
         aria-label="视图切换"
         options={[
           { value: 'queue', label: '发布队列' },
-          { value: 'accounts', label: '账号矩阵' },
           { value: 'adapt', label: '分平台差异化' },
         ]}
       />
@@ -120,41 +117,6 @@ export function UgcBoard() {
               </div>
             )
           })}
-        </div>
-      )}
-
-      {tab === 'accounts' && (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-xs text-muted-foreground">
-                <th className="py-2 pr-3 font-medium">平台</th>
-                <th className="px-3 py-2 font-medium">账号</th>
-                <th className="px-3 py-2 font-medium">定位 / 人设</th>
-                <th className="px-3 py-2 text-right font-medium">粉丝</th>
-                <th className="px-3 py-2 font-medium">状态</th>
-                <th className="px-3 py-2 text-right font-medium">本周计划</th>
-                <th className="py-2 pl-3 text-right font-medium">收录率</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((a) => (
-                <tr key={a.name} className="border-b border-border/60 last:border-0">
-                  <td className="py-3 pr-3">
-                    <Badge variant="outline">{a.platform}</Badge>
-                  </td>
-                  <td className="px-3 py-3 font-medium">{a.name}</td>
-                  <td className="px-3 py-3 text-muted-foreground">{a.persona}</td>
-                  <td className="px-3 py-3 text-right font-mono">{a.fans}</td>
-                  <td className="px-3 py-3">
-                    <Badge variant={stateVariant[a.state]}>{a.state}</Badge>
-                  </td>
-                  <td className="px-3 py-3 text-right font-mono">{a.plan} 篇</td>
-                  <td className="py-3 pl-3 text-right font-mono">{a.index}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
 
