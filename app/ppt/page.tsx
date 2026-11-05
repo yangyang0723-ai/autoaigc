@@ -20,6 +20,8 @@ import {
   ScanText,
   PenTool,
   Images,
+  Wand2,
+  Undo2,
 } from 'lucide-react'
 
 const scenes = ['新车发布会', '销售培训课件', '月度经营汇报', '投资人路演']
@@ -42,7 +44,36 @@ const genSteps = [
   { icon: PenTool, label: '排版与备注生成', desc: '智能配图并撰写演讲备注' },
 ]
 
+const defaultPrompt = '主题：2026 星海 SUV 上市发布会；受众：媒体 + 经销商；目的：传递产品力与订单转化'
+
+function pickField(raw: string, keys: string[]) {
+  for (const key of keys) {
+    const match = raw.match(new RegExp(`${key}\\s*[：:]\\s*([^；;\\n]+)`))
+    if (match?.[1]?.trim()) return match[1].trim()
+  }
+  return ''
+}
+
+function optimizePrompt(raw: string, scene: string) {
+  const text = raw.trim()
+  const topic = pickField(text, ['主题']) || text.split(/[；;\n]/)[0].replace(/^[^：:]*[：:]/, '').trim() || '汽车品牌营销汇报'
+  const audience = pickField(text, ['受众', '听众']) || '媒体、经销商与内部销售团队'
+  const purpose = pickField(text, ['目的', '目标']) || '传递核心信息并推动决策与转化'
+
+  return [
+    `主题：${topic}`,
+    `受众：${audience}`,
+    `目的：${purpose}`,
+    `场景：${scene}`,
+    '结构要求：封面 → 市场背景 → 核心卖点 → 竞品对比 → 价格与政策 → 目标与行动计划',
+    '内容要求：每页 3–5 个要点，数据类页面配图表并标注口径与来源，每页附演讲备注',
+    '表达要求：语言专业简洁，避免“最”“第一”等绝对化用语，所有数据可核实',
+  ].join('\n')
+}
+
 export default function PptPage() {
+  const [prompt, setPrompt] = useState(defaultPrompt)
+  const [previousPrompt, setPreviousPrompt] = useState<string | null>(null)
   const [scene, setScene] = useState(scenes[0])
   const [template, setTemplate] = useState(templates[0])
   const [current, setCurrent] = useState(0)
@@ -66,6 +97,18 @@ export default function PptPage() {
     }, 780)
   }
 
+  function handleOptimize() {
+    if (!prompt.trim()) return
+    setPreviousPrompt(prompt)
+    setPrompt(optimizePrompt(prompt, scene))
+  }
+
+  function handleUndo() {
+    if (previousPrompt === null) return
+    setPrompt(previousPrompt)
+    setPreviousPrompt(null)
+  }
+
   function handleExport(fmt: 'PPTX' | 'PDF') {
     if (exporting) return
     setExporting(fmt)
@@ -78,7 +121,7 @@ export default function PptPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+    <div className="mx-auto grid max-w-[1400px] gap-6 lg:grid-cols-[400px_minmax(0,1fr)]">
       {/* Left controls */}
       <div className="flex flex-col gap-4">
         <Card className="p-5">
@@ -86,11 +129,42 @@ export default function PptPage() {
             <Sparkles className="size-4 text-primary" />
             智能大纲生成（FR-PPT-001）
           </div>
+          <label htmlFor="ppt-prompt" className="sr-only">
+            汇报主题、受众与目的
+          </label>
           <textarea
-            rows={3}
-            defaultValue="主题：2026 星海 SUV 上市发布会；受众：媒体 + 经销商；目的：传递产品力与订单转化"
-            className="w-full resize-none rounded-lg border border-border bg-background p-3 text-sm leading-relaxed outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+            id="ppt-prompt"
+            rows={9}
+            value={prompt}
+            onChange={(e) => {
+              setPrompt(e.target.value)
+              setPreviousPrompt(null)
+            }}
+            placeholder="请输入汇报主题、受众与目的，例如：主题：2026 星海 SUV 上市发布会"
+            className="min-h-[220px] w-full resize-y rounded-lg border border-border bg-background p-3.5 text-sm leading-relaxed outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
           />
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground">{prompt.length} 字</span>
+            <div className="flex items-center gap-2">
+              {previousPrompt !== null && (
+                <Button type="button" variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleUndo}>
+                  <Undo2 className="size-3.5" />
+                  撤销
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 border-primary/40 text-xs text-primary hover:bg-primary/10"
+                onClick={handleOptimize}
+                disabled={!prompt.trim()}
+              >
+                <Wand2 className="size-3.5" />
+                优化提示词
+              </Button>
+            </div>
+          </div>
           <p className="mb-2 mt-4 text-xs font-semibold">应用场景</p>
           <div className="flex flex-wrap gap-2">
             {scenes.map((s) => (
