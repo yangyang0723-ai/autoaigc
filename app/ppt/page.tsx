@@ -285,7 +285,12 @@ export default function PptPage() {
                   演示中
                 </Badge>
               )}
-              <div className="absolute inset-0 flex flex-col justify-center gap-4 p-10">
+              <div
+                className={cn(
+                  'absolute inset-0 flex flex-col justify-center gap-4 p-10',
+                  slides[current].type === 'cover' && 'pr-[44%]',
+                )}
+              >
                 <Badge variant="accent" className="w-fit">
                   {scene}
                 </Badge>
@@ -314,8 +319,16 @@ export default function PptPage() {
                   </ul>
                 )}
                 {slides[current].type === 'cover' && (
-                  <div className="absolute bottom-6 right-6 h-40 w-64 overflow-hidden rounded-lg">
-                    <Image src="/cars/blue-suv-poster.png" alt="封面配图" fill className="object-cover" />
+                  <div className="absolute inset-y-0 right-0 aspect-[718/1004] overflow-hidden">
+                    <Image
+                      src="/cars/blue-suv-poster.png"
+                      alt="封面配图：蓝色新能源 SUV 海报"
+                      width={1024}
+                      height={1024}
+                      sizes="320px"
+                      className="absolute max-w-none"
+                      style={{ width: '142.6%', height: 'auto', left: '-21.3%', top: '-1%' }}
+                    />
                   </div>
                 )}
                 {slides[current].type === 'table' && (
