@@ -208,7 +208,7 @@ export default function PptPage() {
           ) : (
             <>
               <Sparkles className="size-4" />
-              {status === 'done' ? '重新一键生成 PPT' : 'AI 一键生成 PPT（≤ 2 分钟）'}
+              {status === 'done' ? '重新一键生成 PPT' : 'AI 一键生成 PPT'}
             </>
           )}
         </Button>
