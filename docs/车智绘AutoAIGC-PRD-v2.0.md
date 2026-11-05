@@ -23,7 +23,7 @@
 | 角色 | 典型场景 | 核心诉求 |
 | --- | --- | --- |
 | 主机厂市场部 | 新车上市、节点大促 | 统一品牌调性，批量产出多平台素材 |
-| 经销商集团市场负责人 | 区域活动、经营汇报 | 快速产出海报与多平台素材，掌握门店内容效果 |
+| 经销商集团市场负责人 | 区域活动、经营汇报 | 快速产出 PPT / 海报，掌握门店内容效果 |
 | 4S 店新媒体运营 | 公众号 / 小红书 / 抖音日更 | 低成本高频更新，平台调性自动适配 |
 | 一线销售顾问 | 每日朋友圈获客 | 3 步出图出文，带个人二维码，不违规 |
 | 合规 / 法务 | 内容风控 | 广告法、平台规则、行业规范三重自动拦截 |
@@ -32,7 +32,7 @@
 
 | 术语 | 说明 |
 | --- | --- |
-| 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / 朋友圈四类生成器，统一实现 `Skill` 接口 |
+| 生成引擎 / Skill | 平台核心能力单元，指图片 / 图文 / 视频 / PPT / 朋友圈五类生成器，统一实现 `Skill` 接口 |
 | taskId | 单次生成任务唯一标识，格式 `{skillId}_{base36时间戳}_{6位随机}`，失败也必须返回 |
 | 合规网关 | `POST /api/knowledge/validate`，对文本产出执行三重合规检测 |
 | 购车旅程阶段 | `journey_stage`，决定内容目标、信息密度与 CTA 类型 |
@@ -62,8 +62,8 @@
 │   ├─ /image         AI 图片生成      海报 / 对比图 / 配图          FR-IMG
 │   ├─ /text          AI 图文生成      推文 / 种草 / 详情页          FR-TXT
 │   ├─ /video         AI 视频生成      口播 / 展示 / 切片            FR-VID
-
-│   └─ /moments       朋友圈图文       一线销售快速发圈              FR-MOM
+│   ├─ /moments       朋友圈图文       一线销售快速发圈              FR-MOM
+│   └─ /ppt           AI PPT 生成      发布会 / 培训 / 汇报          FR-PPT
 ├─ 资产与数据
 │   ├─ /assets        素材资产管理     存储 / 检索 / 协作            FR-AST
 │   （数据分析中台已移除，不属于当前版本范围）
@@ -87,7 +87,7 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│ 表现层  app/{image,text,video,moments}/page.tsx      │
+│ 表现层  app/{image,text,video,ppt,moments}/page.tsx      │
 │  · 由 skill.fields 驱动参数表单                           │
 │  · 由 skill.stages 驱动生成阶段动效                       │
 │  · 消费 SkillResult，渲染结果或错误分支                    │
@@ -95,7 +95,7 @@
                            │ runSkill(id, input)
 ┌──────────────────────────▼──────────────────────────────┐
 │ 调度层  lib/skills/index.ts                              │
-│  · skills 注册表（image/text/video/moments）          │
+│  · skills 注册表（image/text/video/ppt/moments）          │
 │  · getSkill(id) / runSkill(id, input) 动态调度            │
 │  · skillList 供导航、文档、选择器复用                      │
 └──────────────────────────┬──────────────────────────────┘
@@ -110,7 +110,7 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-**关键设计约束**：`run()` 当前为 mock（`simulateLatency` + 贴近真实的示例数据）。接入真实模型时**只替换 `run()` 内部实现，调用方代码零改动**——这是全平台接入真实 AI 的唯一改造点。
+**关键设计约束**：`run()` 当前为 mock（`simulateLatency` + 贴近真实的示例数据）。接入真实模型时**只替换 `run()` 内部实现，调用方代码零���动**——这是全平台接入真实 AI 的唯一改造点。
 
 ### 3.2 内容生成引擎统一工作流模式
 
@@ -141,7 +141,8 @@
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 图片<br/>/image · FR-IMG</div>
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 图文<br/>/text · FR-TXT</div>
     <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI 视频<br/>/video · FR-VID</div>
-      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">朋友圈图文<br/>/moments · FR-MOM</div>
+    <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">朋友圈图文<br/>/moments · FR-MOM</div>
+    <div style="flex:1 1 150px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(139,200,234,0.14);border:1px solid rgba(139,200,234,0.35);font-size:12px;text-align:center;">AI PPT<br/>/ppt · FR-PPT</div>
   </div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1.4;">▼ runSkill(id, input) 动态调度</div>
 
@@ -173,7 +174,9 @@
     <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
       <b style="color:#8BC8EA;">视频 · 领域节点</b><br/>解析脚本→智能分镜→数字人口播→卡点合成<br/><b>硬约束</b>：Σ durationSec=durationSec<br/><b>合规</b>：captions 事实来源
     </div>
-
+    <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
+      <b style="color:#8BC8EA;">PPT · 领域节点</b><br/>解析受众→编排大纲→套模板→数据可视化<br/><b>硬约束</b>：slides.length=pages<br/><b>合规</b>：图表口径/来源齐全
+    </div>
     <div style="flex:1 1 180px;min-width:0;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.025);border:1px solid rgba(0,0,0,0.08);font-size:11.5px;">
       <b style="color:#8BC8EA;">朋友圈 · 领域节点</b><br/>解析场景→文案→配图水印→合规润色<br/><b>硬约束</b>：copy 80-180字 / 水印一致<br/><b>合规</b>：库存/价格/案例来源
     </div>
@@ -366,7 +369,7 @@ flowchart TD
 - **来源优先级**：品牌/车型知识库与已审核卖点 > 平台搜索热词与历史高互动内容 > 运营补充词。每词保存 `source`、`updated_at`、`evidence_id`、`risk_level`、有效期；过期或无来源的词不得进入 Prompt。
 - **组合规则**：每次 1–2 个核心词 + 2–4 个场景/痛点词 + 1–2 个证据词 + 1 个转化词。核心词必须出现在标题或首屏，痛点词进入前 30% 内容，证据词必须绑定具体事实，转化词只用于 CTA。
 - **平台适配**：小红书偏场景/体验/清单；短视频偏前三秒利益点/实测/避坑；公众号偏深度解读/购车指南；朋友圈偏门店/现车/试驾/权益。**不得跨平台原样复制**。
-- **频次控制**：同一核心词全文自然出现 ≤ 3 次；关键词覆盖率 ≤ 正文字符数 3%；图片禁止直接绘制关键词文字；视频关键词须同步出现在口播或字幕；PPT 关键词只用于标题、结论或图表标签。
+- **频次控制**：同一核心词全文自然出现 ≤ 3 次；关键词覆盖率 ≤ 正文字符数 3%；图片禁止直接绘制关键词文字；视频关键词须同步出现在口播或字幕；PPT ���键词只用于标题、结论或图表标签。
 - **合规过滤**：默认禁用绝对化词；「限时、最后一天、现车、最低价、零首付」仅在 `offer` 含有效期、适用条件与来源时允许。
 - **输出记录**：返回 `used_keywords[]`、`keyword_positions[]`、`keyword_sources[]`、`rejected_keywords[]`、`keyword_coverage`。
 
@@ -727,10 +730,9 @@ flowchart TD
 
 ---
 
-### 4.4 PPT 生成（已移除）
+### 4.4 AI PPT 生成（`/ppt` · FR-PPT）
 
-PPT 生成页面、技能实现、导航入口及 FR-PPT 功能需求已从当前版本移除，不属于当前产品范围。
-
+**元信息**：`id: 'ppt'` · `estimatedMs: 3900` · 4 阶段
 
 **工作流模式**：按「输入校验 → 任务创建 → 主题与受众准备 → 大纲编排 → 模板渲染 → 数据可视化 → 结果校验 → 合规校验 → 持久化」节点执行，主题、大纲、模板和页面数据按节点依赖传递。
 
@@ -925,7 +927,7 @@ flowchart TD
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);font-size:12.5px;margin:6px 0;">validate：scene 非空 <span style="color:#EA6668;font-weight:600;">｜失败 → INVALID_INPUT</span></div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
-  <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解析场景与人设（结合每日内容日历推荐）</div>
+  <div style="padding:8px 12px;border-radius:8px;background:rgba(139,200,234,0.10);border:1px solid rgba(139,200,234,0.3);font-size:12.5px;margin:6px 0;">阶段1 解��场景与人设（结合每日内容日历推荐）</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
   <div style="padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.03);font-size:12.5px;margin:6px 0;">Prompt 组装：销售顾问助手角色 + offer/store_info + persona 口吻 + 输出 Schema</div>
   <div style="text-align:center;color:#8BC8EA;font-size:13px;line-height:1;">▼</div>
@@ -1020,7 +1022,7 @@ copy 长度必须在 80–180 字，hashtags 数量 3–5 个。
 ### 6.1 性能
 - 首屏 LCP ≤ 2.5s；交互 INP ≤ 200ms；CLS ≤ 0.1。
 - 生成阶段动效必须在点击后 100ms 内出现。
-- 图片使用 `next/image`，视频封面懒加载。
+- 图片使用 `next/image`，视频���面懒加载。
 
 ### 6.2 可访问性
 - 所有图标按钮必须有 `aria-label`；弹层支持 Esc 关闭并锁定背景滚动。
