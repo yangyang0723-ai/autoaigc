@@ -12,10 +12,11 @@ import { imageSkill } from './image-skill'
 import { textSkill } from './text-skill'
 import { videoSkill } from './video-skill'
 import { momentsSkill } from './moments-skill'
+import { pptSkill } from './ppt-skill'
 import type { SkillId } from './types'
 
 export * from './types'
-export { imageSkill, textSkill, videoSkill, momentsSkill }
+export { imageSkill, textSkill, videoSkill, momentsSkill, pptSkill }
 
 /** 所有 skill 的注册表，按 id 索引 */
 export const skills = {
@@ -23,6 +24,7 @@ export const skills = {
   text: textSkill,
   video: videoSkill,
   moments: momentsSkill,
+  ppt: pptSkill,
 } as const
 
 /** 所有 skill 的元信息列表，供导航 / 文档 / 选择器使用 */

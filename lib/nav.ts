@@ -5,6 +5,7 @@ import {
   FileText,
   Clapperboard,
   MessageCircle,
+  Presentation,
   FolderKanban,
   ScrollText,
 } from 'lucide-react'
@@ -60,6 +61,12 @@ export const navGroups: NavGroup[] = [
         label: '朋友圈图文',
         desc: '一线销售快速发圈',
         icon: MessageCircle,
+      },
+      {
+        href: '/ppt',
+        label: 'AI PPT 生成',
+        desc: '发布会 / 培训 / 汇报',
+        icon: Presentation,
       },
     ],
   },
