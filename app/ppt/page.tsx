@@ -178,7 +178,7 @@ export default function PptPage() {
         <Card className="p-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <LayoutTemplate className="size-4 text-primary" />
-            汽车专业模板库（100+）
+            主题颜色
           </div>
           <div className="grid grid-cols-2 gap-2">
             {templates.map((t) => (
